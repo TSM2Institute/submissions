@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TSM2 Institute for Cosmology – Submission Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -25,9 +26,7 @@
         }
     </script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
+        body { font-family: 'Inter', sans-serif; }
         .hero-bg {
             background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 50%, #0f172a 100%);
             position: relative;
@@ -36,10 +35,7 @@
         .hero-bg::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background-image: 
                 radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.3), transparent),
                 radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.2), transparent),
@@ -48,156 +44,377 @@
                 radial-gradient(1px 1px at 160px 120px, rgba(255,255,255,0.3), transparent),
                 radial-gradient(2px 2px at 200px 50px, rgba(255,255,255,0.25), transparent),
                 radial-gradient(1px 1px at 250px 90px, rgba(255,255,255,0.35), transparent),
-                radial-gradient(2px 2px at 300px 150px, rgba(255,255,255,0.2), transparent),
-                radial-gradient(1px 1px at 350px 60px, rgba(255,255,255,0.3), transparent),
-                radial-gradient(2px 2px at 400px 100px, rgba(255,255,255,0.15), transparent);
+                radial-gradient(2px 2px at 300px 150px, rgba(255,255,255,0.2), transparent);
             background-size: 450px 200px;
             opacity: 0.8;
             pointer-events: none;
         }
         .nebula-glow {
             position: absolute;
-            width: 600px;
-            height: 600px;
+            width: 600px; height: 600px;
             border-radius: 50%;
             background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(30,58,95,0.05) 50%, transparent 70%);
-            top: -200px;
-            right: -100px;
+            top: -200px; right: -100px;
             pointer-events: none;
         }
-        .step-indicator {
-            transition: all 0.3s ease;
-        }
-        .step-indicator.active {
-            background-color: #3b82f6;
-            color: white;
-        }
+        [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="font-inter bg-white text-gray-900 min-h-screen flex flex-col">
-    <header class="hero-bg text-white py-16 md:py-24 relative">
+<body class="font-inter bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+    <header class="hero-bg text-white py-12 md:py-16 relative">
         <div class="nebula-glow"></div>
         <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
-            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 tracking-tight">
-                TSM2 Institute for Cosmology
-            </h1>
-            <h2 class="text-xl md:text-2xl font-light text-blue-200 mb-6">
-                Submission Portal
-            </h2>
-            <p class="text-lg md:text-xl font-medium text-blue-100 mb-4">
-                Independent Examiner-Confirmed Registration
-            </p>
-            <p class="text-sm md:text-base text-blue-200/80 max-w-2xl mx-auto leading-relaxed">
-                All claims enter via this structured gate. Only examiner-confirmed submissions receive immutable TSM2-REG numbers.
-            </p>
+            <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 tracking-tight">TSM2 Institute for Cosmology</h1>
+            <h2 class="text-lg md:text-xl font-light text-blue-200 mb-4">Submission Portal</h2>
+            <p class="text-base md:text-lg font-medium text-blue-100 mb-2">Independent Examiner-Confirmed Registration</p>
+            <p class="text-sm text-blue-200/80 max-w-2xl mx-auto leading-relaxed">All claims enter via this structured gate. Only examiner-confirmed submissions receive immutable TSM2-REG numbers.</p>
         </div>
     </header>
 
-    <main class="flex-grow py-12 md:py-16 px-6">
-        <div class="max-w-3xl mx-auto">
-            <div class="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
-                <div class="bg-gray-50 border-b border-gray-200 px-6 py-4">
-                    <h3 class="text-lg font-semibold text-dark-blue">Submission Form</h3>
-                    <p class="text-sm text-gray-600 mt-1">Complete all steps to register your claim</p>
+    <main class="flex-grow py-8 md:py-12 px-4 md:px-6" x-data="submissionForm()" x-cloak>
+        <div class="max-w-4xl mx-auto">
+            <template x-if="submitted">
+                <div class="bg-white border border-green-200 rounded-xl shadow-lg p-8 text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Submission Received</h3>
+                    <p class="text-gray-600 mb-4">Compliance Case created successfully.</p>
+                    <a :href="issueUrl" target="_blank" class="inline-flex items-center gap-2 px-6 py-3 bg-dark-blue text-white font-medium rounded-lg hover:bg-accent-blue transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                        View Issue on GitHub
+                    </a>
                 </div>
+            </template>
 
-                <div class="px-6 py-6">
-                    <div class="flex items-center justify-between mb-8">
-                        <div class="flex items-center">
-                            <div class="step-indicator active w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium bg-light-blue text-white">
-                                1
-                            </div>
-                            <span class="ml-2 text-sm font-medium text-gray-900 hidden sm:inline">Submission Type & Scale</span>
+            <template x-if="!submitted">
+                <div class="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+                    <div class="bg-gray-50 border-b border-gray-200 px-6 py-4">
+                        <h3 class="text-lg font-semibold text-dark-blue">TSM2 Submission Form</h3>
+                        <p class="text-sm text-gray-600 mt-1">Complete all required fields. Submissions cannot proceed without falsifiability and magnitude/scaling.</p>
+                    </div>
+
+                    <div class="px-6 py-4 border-b border-gray-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-gray-700">Progress</span>
+                            <span class="text-sm text-gray-500" x-text="`Step ${currentStep} of ${totalSteps}`"></span>
                         </div>
-                        <div class="flex-1 h-px bg-gray-300 mx-4"></div>
-                        <div class="flex items-center">
-                            <div class="step-indicator w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium bg-gray-200 text-gray-600">
-                                2
-                            </div>
-                            <span class="ml-2 text-sm font-medium text-gray-500 hidden sm:inline">Claim Details</span>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-light-blue h-2 rounded-full transition-all duration-300" :style="`width: ${(currentStep / totalSteps) * 100}%`"></div>
                         </div>
-                        <div class="flex-1 h-px bg-gray-300 mx-4"></div>
-                        <div class="flex items-center">
-                            <div class="step-indicator w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium bg-gray-200 text-gray-600">
-                                3
-                            </div>
-                            <span class="ml-2 text-sm font-medium text-gray-500 hidden sm:inline">Evidence & Review</span>
+                        <div class="flex justify-between mt-3 text-xs text-gray-500 overflow-x-auto">
+                            <template x-for="(label, index) in stepLabels" :key="index">
+                                <span :class="{'text-light-blue font-medium': currentStep === index + 1, 'text-green-600': currentStep > index + 1}" class="whitespace-nowrap px-1" x-text="label"></span>
+                            </template>
                         </div>
                     </div>
 
-                    <form id="submissionForm">
-                        <div id="step1" class="space-y-6">
-                            <div>
-                                <label for="submissionType" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Submission Type
-                                </label>
-                                <select id="submissionType" name="submissionType" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue transition-colors">
-                                    <option value="">Select submission type...</option>
-                                    <option value="theoretical">Theoretical Claim</option>
-                                    <option value="observational">Observational Evidence</option>
-                                    <option value="computational">Computational Model</option>
-                                    <option value="experimental">Experimental Result</option>
-                                </select>
+                    <form @submit.prevent="submitForm" class="px-6 py-6">
+                        <div x-show="currentStep === 1" x-transition>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 1: Basic Information</h4>
+                            <div class="space-y-5">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Submission Type <span class="text-red-500">*</span></label>
+                                    <select x-model="form.submission_type" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required>
+                                        <option value="">Select submission type...</option>
+                                        <option>Observation</option>
+                                        <option>Hypothesis</option>
+                                        <option>Mechanism</option>
+                                        <option>Interpretation</option>
+                                        <option>Ontological proposal</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Primary Scale <span class="text-red-500">*</span></label>
+                                    <select x-model="form.primary_scale" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required>
+                                        <option value="">Select scale...</option>
+                                        <option>Laboratory</option>
+                                        <option>Planetary</option>
+                                        <option>Stellar</option>
+                                        <option>Galactic</option>
+                                        <option>Cosmic</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Submission Title <span class="text-red-500">*</span></label>
+                                    <input type="text" x-model="form.submission_title" placeholder="Clear, specific title (no rhetoric)" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">One-Sentence Core Claim <span class="text-red-500">*</span> <span class="text-gray-400 font-normal">(<span x-text="form.core_claim.length"></span>/300)</span></label>
+                                    <textarea x-model="form.core_claim" maxlength="300" rows="3" placeholder="e.g., 'X causes Y via Z coupling under conditions C.'" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required></textarea>
+                                    <p class="text-xs text-gray-500 mt-1">State exactly what you are claiming — no background, no rhetoric.</p>
+                                </div>
                             </div>
+                        </div>
 
-                            <div>
-                                <label for="scale" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Cosmological Scale
-                                </label>
-                                <select id="scale" name="scale" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue transition-colors">
-                                    <option value="">Select scale...</option>
-                                    <option value="quantum">Quantum Scale</option>
-                                    <option value="stellar">Stellar Scale</option>
-                                    <option value="galactic">Galactic Scale</option>
-                                    <option value="cosmic">Cosmic Scale</option>
-                                    <option value="universal">Universal Constants</option>
-                                </select>
+                        <div x-show="currentStep === 2" x-transition>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 2: Causal & Cycle Compatibility (Hard Gate)</h4>
+                            <div class="space-y-5">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Does this claim fit within the Cosmic Energy Cycle (CEC) framework? <span class="text-red-500">*</span></label>
+                                    <select x-model="form.cec_fit" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required>
+                                        <option value="">Select...</option>
+                                        <option>Yes — explicitly compatible</option>
+                                        <option>Partially — requires clarification</option>
+                                        <option>No — stands outside the CEC</option>
+                                    </select>
+                                </div>
+                                <div x-show="form.cec_fit && form.cec_fit !== 'No — stands outside the CEC'">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Where does it sit in the Energy Cycle? <span class="text-red-500">*</span></label>
+                                    <textarea x-model="form.cec_location" rows="3" placeholder="Energy storage / transfer / conversion / dissipation / equilibrium; include any cycle stage(s)." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Pre / Transition / Post Sequence <span class="text-red-500">*</span></label>
+                                    <textarea x-model="form.sequence" rows="4" placeholder="Pre-state:&#10;Transition:&#10;Post-state:" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue font-mono text-sm" required></textarea>
+                                    <p class="text-xs text-gray-500 mt-1">Define the causal sequence surrounding your claim.</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Conservation Check <span class="text-red-500">*</span></label>
+                                    <p class="text-xs text-gray-500 mb-2">Select all conservation principles your claim respects.</p>
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                        <template x-for="opt in ['Energy', 'Momentum', 'Mass–energy equivalence', 'Angular momentum', 'Charge', 'Other']" :key="opt">
+                                            <label class="flex items-center gap-2 p-2 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                                                <input type="checkbox" :value="opt" x-model="form.conservation" class="rounded text-light-blue focus:ring-light-blue">
+                                                <span class="text-sm" x-text="opt"></span>
+                                            </label>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div x-show="form.conservation.includes('Other')">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">If 'Other', specify</label>
+                                    <input type="text" x-model="form.conservation_other" placeholder="e.g., baryon number, lepton number, etc." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue">
+                                </div>
                             </div>
+                        </div>
 
-                            <div>
-                                <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Submission Title
-                                </label>
-                                <input type="text" id="title" name="title" placeholder="Enter a concise title for your submission" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue transition-colors">
+                        <div x-show="currentStep === 3" x-transition>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 3: Definitions & Assumptions</h4>
+                            <div class="space-y-5">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Key Terms Defined <span class="text-red-500">*</span></label>
+                                    <textarea x-model="form.key_terms" rows="4" placeholder="List term: definition" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required></textarea>
+                                    <p class="text-xs text-gray-500 mt-1">Define all non-standard or critical terms used in the claim.</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Explicit Assumptions <span class="text-red-500">*</span></label>
+                                    <textarea x-model="form.assumptions" rows="4" placeholder="- Assumption 1&#10;- Assumption 2" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required></textarea>
+                                    <p class="text-xs text-gray-500 mt-1">List assumptions (locality, linearity, constant parameters, etc.).</p>
+                                </div>
                             </div>
+                        </div>
 
-                            <div class="pt-4 flex justify-end">
-                                <button type="button" id="nextBtn" class="px-6 py-3 bg-dark-blue text-white font-medium rounded-lg hover:bg-accent-blue transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-light-blue">
-                                    Continue to Step 2
-                                </button>
+                        <div x-show="currentStep === 4" x-transition>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 4: Scaling & Magnitude (Hard Gate)</h4>
+                            <div class="space-y-5">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Expected Order of Magnitude <span class="text-red-500">*</span></label>
+                                    <textarea x-model="form.magnitude" rows="2" placeholder="e.g., Δx ~ 10^-9 m, Δf/f ~ 10^-12, Δa ~ 10^-10 m/s^2" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required></textarea>
+                                    <p class="text-xs text-gray-500 mt-1">Provide a rough numerical estimate of the effect.</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Relevant Scaling Law <span class="text-red-500">*</span></label>
+                                    <select x-model="form.scaling_law" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required>
+                                        <option value="">Select scaling law...</option>
+                                        <option>Inverse-square</option>
+                                        <option>Inverse-cube (tidal)</option>
+                                        <option>Linear</option>
+                                        <option>Other (specify below)</option>
+                                    </select>
+                                </div>
+                                <div x-show="form.scaling_law === 'Other (specify below)'">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">If 'Other', specify scaling</label>
+                                    <input type="text" x-model="form.scaling_other" placeholder="e.g., exponential, logarithmic, 1/r^4, etc." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Why This Effect Is Not Negligible <span class="text-red-500">*</span></label>
+                                    <textarea x-model="form.not_negligible" rows="3" placeholder="Address confounders, systematic error floors, and competing influences." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required></textarea>
+                                </div>
                             </div>
+                        </div>
+
+                        <div x-show="currentStep === 5" x-transition>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 5: Locality & Coupling</h4>
+                            <div class="space-y-5">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Local vs External Influences <span class="text-red-500">*</span></label>
+                                    <textarea x-model="form.local_vs_external" rows="3" placeholder="Identify which influences dominate the measurement and why." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Coupling Mechanism <span class="text-red-500">*</span></label>
+                                    <textarea x-model="form.coupling" rows="3" placeholder="Describe how the proposed cause physically couples to the measurement." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div x-show="currentStep === 6" x-transition>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 6: Frame Dependence & Observer Role (Hard Gate)</h4>
+                            <div class="space-y-5">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Reference Frame Declared <span class="text-red-500">*</span></label>
+                                    <select x-model="form.frame" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required>
+                                        <option value="">Select frame...</option>
+                                        <option>Local inertial</option>
+                                        <option>Rotating / orbital</option>
+                                        <option>Co-moving</option>
+                                        <option>Global / absolute</option>
+                                        <option>Not specified (will be flagged)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Observer Dependence <span class="text-red-500">*</span></label>
+                                    <select x-model="form.observer_dependence" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required>
+                                        <option value="">Select...</option>
+                                        <option>Yes — effect changes with observer position/motion</option>
+                                        <option>No — invariant under observer position/motion</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Explain observer dependence / invariance <span class="text-red-500">*</span></label>
+                                    <textarea x-model="form.observer_explain" rows="3" placeholder="2–8 lines: what changes (or why it cannot change)." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div x-show="currentStep === 7" x-transition>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 7: Evidence Status</h4>
+                            <div class="space-y-5">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Evidence Provided <span class="text-red-500">*</span></label>
+                                    <div class="space-y-2">
+                                        <template x-for="opt in ['Existing measurements', 'Re-analysis of published data', 'New data', 'Simulation / model', 'None (conceptual only)']" :key="opt">
+                                            <label class="flex items-center gap-2 p-2 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                                                <input type="checkbox" :value="opt" x-model="form.evidence" class="rounded text-light-blue focus:ring-light-blue">
+                                                <span class="text-sm" x-text="opt"></span>
+                                            </label>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Uncertainty & Systematics Considered <span class="text-red-500">*</span></label>
+                                    <textarea x-model="form.uncertainty" rows="3" placeholder="Describe known uncertainties and potential confounders." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div x-show="currentStep === 8" x-transition>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 8: Falsifiability (Non-negotiable)</h4>
+                            <div class="space-y-5">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">What Would Falsify This Claim? <span class="text-red-500">*</span></label>
+                                    <textarea x-model="form.falsify" rows="3" placeholder="Describe an observation or result that would show this idea is wrong." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Proposed Test / Observation <span class="text-red-500">*</span></label>
+                                    <textarea x-model="form.proposed_test" rows="3" placeholder="Suggest an experiment, measurement, or analysis that could test the claim." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div x-show="currentStep === 9" x-transition>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 9: Ontology Check</h4>
+                            <div class="space-y-5">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">New Entity or Medium Introduced? <span class="text-red-500">*</span></label>
+                                    <select x-model="form.new_entity" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required>
+                                        <option value="">Select...</option>
+                                        <option>No</option>
+                                        <option>Yes</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">If Yes: Why existing physics is insufficient <span class="text-red-500">*</span></label>
+                                    <textarea x-model="form.why_insufficient" rows="3" placeholder="If 'No', write 'N/A'. If 'Yes', explain what existing models fail to account for; quantify the gap." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div x-show="currentStep === 10" x-transition>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 10: Redundancy & Necessity (Hard Gate)</h4>
+                            <div class="space-y-5">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Can the effect be explained without introducing new entities? <span class="text-red-500">*</span></label>
+                                    <select x-model="form.redundancy" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required>
+                                        <option value="">Select...</option>
+                                        <option>Yes — existing mechanisms suffice</option>
+                                        <option>No — new mechanism/entity is required</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Redundancy / necessity explanation <span class="text-red-500">*</span></label>
+                                    <textarea x-model="form.redundancy_explain" rows="4" placeholder="2–10 lines. If 'No', quantify what fails." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div x-show="currentStep === 11" x-transition>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 11: Declarations & Attachments</h4>
+                            <div class="space-y-5">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Language Confirmation <span class="text-red-500">*</span></label>
+                                    <label class="flex items-start gap-2 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                                        <input type="checkbox" x-model="form.language_confirm" class="rounded text-light-blue focus:ring-light-blue mt-0.5" required>
+                                        <span class="text-sm">I confirm this submission avoids absolutist or rhetorical claims (e.g., 'proved', 'failed', 'ignored').</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Compliance Acknowledgement <span class="text-red-500">*</span></label>
+                                    <label class="flex items-start gap-2 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                                        <input type="checkbox" x-model="form.charter_ack" class="rounded text-light-blue focus:ring-light-blue mt-0.5" required>
+                                        <span class="text-sm">I have read and understand the TSM2 Compliance Charter.</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">External Links (DOI, arXiv, Zenodo, etc.)</label>
+                                    <input type="text" x-model="form.links" placeholder="Paste links (optional)" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Figures / Supplementary Files</label>
+                                    <textarea x-model="form.attachments" rows="2" placeholder="Describe any attachments you will add to the GitHub issue." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Submitter Declaration <span class="text-red-500">*</span></label>
+                                    <label class="flex items-start gap-2 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                                        <input type="checkbox" x-model="form.declaration" class="rounded text-light-blue focus:ring-light-blue mt-0.5" required>
+                                        <span class="text-sm">I affirm that this submission is made in good faith and is intended for constructive scientific evaluation.</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div x-show="error" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p class="text-sm text-red-700" x-text="error"></p>
+                        </div>
+
+                        <div class="flex justify-between mt-8 pt-4 border-t">
+                            <button type="button" @click="prevStep" x-show="currentStep > 1" class="px-5 py-2.5 text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
+                                Previous
+                            </button>
+                            <div x-show="currentStep === 1"></div>
+                            <button type="button" @click="nextStep" x-show="currentStep < totalSteps" class="px-5 py-2.5 bg-dark-blue text-white font-medium rounded-lg hover:bg-accent-blue transition-colors">
+                                Continue
+                            </button>
+                            <button type="submit" x-show="currentStep === totalSteps" :disabled="isSubmitting" class="px-6 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                                <span x-show="isSubmitting" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                                <span x-text="isSubmitting ? 'Submitting...' : 'Submit to GitHub'"></span>
+                            </button>
                         </div>
                     </form>
-
-                    <div class="mt-8 p-4 bg-blue-50 border border-blue-100 rounded-lg">
-                        <p class="text-sm text-blue-800">
-                            <span class="font-semibold">Note:</span> This is a multi-step submission process. Your progress will be saved as you complete each section. TSM2-REG numbers are assigned only after successful examiner review.
-                        </p>
-                    </div>
                 </div>
-            </div>
+            </template>
         </div>
     </main>
 
-    <footer class="bg-dark-blue text-white py-8">
+    <footer class="bg-dark-blue text-white py-6">
         <div class="max-w-4xl mx-auto px-6">
             <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-                <div class="text-center md:text-left">
-                    <p class="text-sm text-blue-200">
-                        &copy; 2024 TSM2 Institute for Cosmology
-                    </p>
-                </div>
+                <p class="text-sm text-blue-200">&copy; 2024 TSM2 Institute for Cosmology</p>
                 <div class="flex flex-wrap items-center justify-center gap-6 text-sm">
-                    <a href="https://tsm2institute.org" class="text-blue-200 hover:text-white transition-colors">
-                        Main Institute Site
-                    </a>
-                    <a href="#" class="text-blue-200 hover:text-white transition-colors">
-                        Pipeline Repository
-                    </a>
+                    <a href="https://tsm2institute.org" class="text-blue-200 hover:text-white transition-colors">Main Institute Site</a>
+                    <a href="#" class="text-blue-200 hover:text-white transition-colors">Pipeline Repository</a>
                     <a href="https://x.com/gjustlooking" target="_blank" rel="noopener noreferrer" class="text-blue-200 hover:text-white transition-colors flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                        </svg>
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                         @gjustlooking
                     </a>
                 </div>
@@ -206,9 +423,263 @@
     </footer>
 
     <script>
-        document.getElementById('nextBtn').addEventListener('click', function() {
-            alert('Multi-step form functionality coming soon. This is a placeholder for the complete submission workflow.');
-        });
+        function submissionForm() {
+            return {
+                currentStep: 1,
+                totalSteps: 11,
+                stepLabels: ['Basic', 'CEC', 'Definitions', 'Scaling', 'Locality', 'Frame', 'Evidence', 'Falsify', 'Ontology', 'Redundancy', 'Declare'],
+                isSubmitting: false,
+                submitted: false,
+                issueUrl: '',
+                error: '',
+                form: {
+                    submission_type: '',
+                    primary_scale: '',
+                    submission_title: '',
+                    core_claim: '',
+                    cec_fit: '',
+                    cec_location: '',
+                    sequence: '',
+                    conservation: [],
+                    conservation_other: '',
+                    key_terms: '',
+                    assumptions: '',
+                    magnitude: '',
+                    scaling_law: '',
+                    scaling_other: '',
+                    not_negligible: '',
+                    local_vs_external: '',
+                    coupling: '',
+                    frame: '',
+                    observer_dependence: '',
+                    observer_explain: '',
+                    evidence: [],
+                    uncertainty: '',
+                    falsify: '',
+                    proposed_test: '',
+                    new_entity: '',
+                    why_insufficient: '',
+                    redundancy: '',
+                    redundancy_explain: '',
+                    language_confirm: false,
+                    charter_ack: false,
+                    links: '',
+                    attachments: '',
+                    declaration: false
+                },
+
+                validateStep() {
+                    this.error = '';
+                    const f = this.form;
+                    const required = (val, name) => {
+                        if (!val || (Array.isArray(val) && val.length === 0)) {
+                            this.error = `${name} is required.`;
+                            return false;
+                        }
+                        return true;
+                    };
+
+                    switch(this.currentStep) {
+                        case 1:
+                            return required(f.submission_type, 'Submission Type') && 
+                                   required(f.primary_scale, 'Primary Scale') && 
+                                   required(f.submission_title, 'Submission Title') && 
+                                   required(f.core_claim, 'Core Claim');
+                        case 2:
+                            if (!required(f.cec_fit, 'CEC Fit')) return false;
+                            if (f.cec_fit !== 'No — stands outside the CEC' && !f.cec_location) {
+                                this.error = 'CEC Location is required when fit is Yes or Partial.';
+                                return false;
+                            }
+                            return required(f.sequence, 'Pre/Transition/Post Sequence') && 
+                                   required(f.conservation, 'Conservation Check');
+                        case 3:
+                            return required(f.key_terms, 'Key Terms') && required(f.assumptions, 'Assumptions');
+                        case 4:
+                            if (!required(f.magnitude, 'Magnitude')) return false;
+                            if (!required(f.scaling_law, 'Scaling Law')) return false;
+                            if (f.scaling_law === 'Other (specify below)' && !f.scaling_other) {
+                                this.error = 'Please specify the scaling law.';
+                                return false;
+                            }
+                            return required(f.not_negligible, 'Why Not Negligible');
+                        case 5:
+                            return required(f.local_vs_external, 'Local vs External') && 
+                                   required(f.coupling, 'Coupling Mechanism');
+                        case 6:
+                            return required(f.frame, 'Reference Frame') && 
+                                   required(f.observer_dependence, 'Observer Dependence') && 
+                                   required(f.observer_explain, 'Observer Explanation');
+                        case 7:
+                            return required(f.evidence, 'Evidence') && required(f.uncertainty, 'Uncertainty');
+                        case 8:
+                            return required(f.falsify, 'Falsifiability') && required(f.proposed_test, 'Proposed Test');
+                        case 9:
+                            return required(f.new_entity, 'New Entity') && required(f.why_insufficient, 'Why Insufficient');
+                        case 10:
+                            return required(f.redundancy, 'Redundancy') && required(f.redundancy_explain, 'Redundancy Explanation');
+                        case 11:
+                            if (!f.language_confirm) { this.error = 'Language confirmation is required.'; return false; }
+                            if (!f.charter_ack) { this.error = 'Compliance acknowledgement is required.'; return false; }
+                            if (!f.declaration) { this.error = 'Submitter declaration is required.'; return false; }
+                            return true;
+                    }
+                    return true;
+                },
+
+                nextStep() {
+                    if (this.validateStep()) {
+                        this.currentStep++;
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                },
+
+                prevStep() {
+                    if (this.currentStep > 1) {
+                        this.currentStep--;
+                        this.error = '';
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                },
+
+                generateMarkdown() {
+                    const f = this.form;
+                    return `## TSM2 Institute Submission
+
+### Basic Information
+- **Submission Type:** ${f.submission_type}
+- **Primary Scale:** ${f.primary_scale}
+- **Title:** ${f.submission_title}
+
+**Core Claim:**
+${f.core_claim}
+
+---
+
+### Causal & Cycle Compatibility (Hard Gate)
+- **CEC Fit:** ${f.cec_fit}
+${f.cec_location ? `\n**CEC Location:**\n${f.cec_location}\n` : ''}
+**Pre / Transition / Post Sequence:**
+\`\`\`
+${f.sequence}
+\`\`\`
+
+**Conservation Principles:** ${f.conservation.join(', ')}${f.conservation_other ? ` (Other: ${f.conservation_other})` : ''}
+
+---
+
+### Definitions & Assumptions
+**Key Terms:**
+${f.key_terms}
+
+**Explicit Assumptions:**
+${f.assumptions}
+
+---
+
+### Scaling & Magnitude (Hard Gate)
+**Expected Magnitude:**
+${f.magnitude}
+
+- **Scaling Law:** ${f.scaling_law}${f.scaling_other ? ` (${f.scaling_other})` : ''}
+
+**Why Not Negligible:**
+${f.not_negligible}
+
+---
+
+### Locality & Coupling
+**Local vs External Influences:**
+${f.local_vs_external}
+
+**Coupling Mechanism:**
+${f.coupling}
+
+---
+
+### Frame Dependence & Observer Role (Hard Gate)
+- **Reference Frame:** ${f.frame}
+- **Observer Dependence:** ${f.observer_dependence}
+
+**Explanation:**
+${f.observer_explain}
+
+---
+
+### Evidence Status
+**Evidence Provided:** ${f.evidence.join(', ')}
+
+**Uncertainty & Systematics:**
+${f.uncertainty}
+
+---
+
+### Falsifiability (Non-negotiable)
+**What Would Falsify This Claim:**
+${f.falsify}
+
+**Proposed Test / Observation:**
+${f.proposed_test}
+
+---
+
+### Ontology Check
+- **New Entity Introduced:** ${f.new_entity}
+
+**Why Existing Physics Is Insufficient:**
+${f.why_insufficient}
+
+---
+
+### Redundancy & Necessity (Hard Gate)
+- **Redundancy:** ${f.redundancy}
+
+**Explanation:**
+${f.redundancy_explain}
+
+---
+
+### Declarations
+- [x] Language confirmation: Avoids absolutist or rhetorical claims
+- [x] Compliance acknowledgement: Read and understand TSM2 Compliance Charter
+- [x] Submitter declaration: Made in good faith for constructive scientific evaluation
+
+${f.links ? `**External Links:** ${f.links}` : ''}
+${f.attachments ? `\n**Attachments Notes:** ${f.attachments}` : ''}`;
+                },
+
+                async submitForm() {
+                    if (!this.validateStep()) return;
+
+                    this.isSubmitting = true;
+                    this.error = '';
+
+                    const title = `[TSM2-SUB] ${this.form.submission_title}`;
+                    const body = this.generateMarkdown();
+
+                    try {
+                        const response = await fetch('/api/submit', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ title, body })
+                        });
+
+                        const data = await response.json();
+
+                        if (!response.ok) {
+                            throw new Error(data.error || 'Submission failed');
+                        }
+
+                        this.issueUrl = data.html_url;
+                        this.submitted = true;
+                    } catch (err) {
+                        this.error = err.message || 'Failed to submit. Please try again.';
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                }
+            };
+        }
     </script>
 </body>
 </html>
