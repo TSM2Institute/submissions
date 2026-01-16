@@ -6,6 +6,8 @@ This is a submission portal for the TSM2 Institute for Cosmology. The applicatio
 
 The system follows a governance protocol where submissions go through compliance checking and examiner review before being registered.
 
+**Status:** Fully functional - submissions create GitHub Issues at TSM2Institute/submissions
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
