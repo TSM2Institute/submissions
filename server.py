@@ -109,7 +109,7 @@ class RequestHandler(SimpleHTTPRequestHandler):
 
 if __name__ == '__main__':
     # Use port 80 for production deployments, 5000 for development
-    is_production = os.environ.get('REPL_DEPLOYMENT') is not None
+    is_production = os.environ.get('REPLIT_DEPLOYMENT') is not None
     port = 80 if is_production else 5000
     print(f'Starting server on port {port}...', file=sys.stderr)
     server = HTTPServer(('0.0.0.0', port), RequestHandler)
