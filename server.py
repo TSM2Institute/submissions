@@ -3,21 +3,27 @@ import json
 import os
 import urllib.request
 import urllib.error
+import sys
 
 class RequestHandler(SimpleHTTPRequestHandler):
     def do_POST(self):
         if self.path == '/api/submit':
-            content_length = int(self.headers['Content-Length'])
-            post_data = self.rfile.read(content_length)
-            
             try:
+                content_length = int(self.headers.get('Content-Length', 0))
+                post_data = self.rfile.read(content_length)
+                
+                print(f"Received POST request, content length: {content_length}", file=sys.stderr)
+                
                 data = json.loads(post_data.decode('utf-8'))
                 title = data.get('title', '')
                 body = data.get('body', '')
                 
+                print(f"Parsed request - Title: {title[:50]}...", file=sys.stderr)
+                
                 github_token = os.environ.get('GITHUB_PAT')
                 if not github_token:
-                    self.send_error_response(500, 'GitHub PAT not configured')
+                    print("ERROR: GitHub PAT not configured", file=sys.stderr)
+                    self.send_json_response(500, {'error': 'GitHub PAT not configured. Please add GITHUB_PAT to Replit Secrets.'})
                     return
                 
                 repo_owner = 'TSM2Institute'
@@ -30,6 +36,8 @@ class RequestHandler(SimpleHTTPRequestHandler):
                 }
                 
                 url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/issues'
+                print(f"Making request to: {url}", file=sys.stderr)
+                
                 req = urllib.request.Request(
                     url,
                     data=json.dumps(issue_data).encode('utf-8'),
@@ -43,41 +51,54 @@ class RequestHandler(SimpleHTTPRequestHandler):
                 )
                 
                 try:
-                    with urllib.request.urlopen(req) as response:
+                    with urllib.request.urlopen(req, timeout=30) as response:
                         result = json.loads(response.read().decode('utf-8'))
-                        self.send_response(200)
-                        self.send_header('Content-Type', 'application/json')
-                        self.end_headers()
-                        self.wfile.write(json.dumps({
+                        print(f"SUCCESS: Issue created - {result.get('html_url')}", file=sys.stderr)
+                        self.send_json_response(200, {
                             'success': True,
                             'html_url': result.get('html_url'),
                             'number': result.get('number')
-                        }).encode('utf-8'))
+                        })
                 except urllib.error.HTTPError as e:
                     error_body = e.read().decode('utf-8')
-                    self.send_error_response(e.code, f'GitHub API error: {error_body}')
+                    print(f"GitHub API HTTPError {e.code}: {error_body}", file=sys.stderr)
+                    try:
+                        error_json = json.loads(error_body)
+                        error_msg = error_json.get('message', error_body)
+                    except:
+                        error_msg = error_body
+                    self.send_json_response(e.code, {'error': f'GitHub API error: {error_msg}'})
                 except urllib.error.URLError as e:
-                    self.send_error_response(500, f'Network error: {str(e)}')
+                    print(f"Network URLError: {str(e)}", file=sys.stderr)
+                    self.send_json_response(500, {'error': f'Network error: {str(e)}'})
                     
-            except json.JSONDecodeError:
-                self.send_error_response(400, 'Invalid JSON')
+            except json.JSONDecodeError as e:
+                print(f"JSON decode error: {str(e)}", file=sys.stderr)
+                self.send_json_response(400, {'error': 'Invalid JSON in request'})
             except Exception as e:
-                self.send_error_response(500, str(e))
+                print(f"Unhandled exception: {type(e).__name__}: {str(e)}", file=sys.stderr)
+                self.send_json_response(500, {'error': f'Server error: {str(e)}'})
         else:
-            self.send_error_response(404, 'Not found')
+            self.send_json_response(404, {'error': 'Not found'})
     
-    def send_error_response(self, code, message):
-        self.send_response(code)
-        self.send_header('Content-Type', 'application/json')
-        self.end_headers()
-        self.wfile.write(json.dumps({'error': message}).encode('utf-8'))
+    def send_json_response(self, code, data):
+        try:
+            response_body = json.dumps(data).encode('utf-8')
+            self.send_response(code)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Content-Length', str(len(response_body)))
+            self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
+            self.end_headers()
+            self.wfile.write(response_body)
+        except Exception as e:
+            print(f"Error sending response: {str(e)}", file=sys.stderr)
     
     def end_headers(self):
-        self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
         super().end_headers()
 
 if __name__ == '__main__':
     port = 5000
+    print(f'Starting server on port {port}...', file=sys.stderr)
     server = HTTPServer(('0.0.0.0', port), RequestHandler)
-    print(f'Server running on port {port}')
+    print(f'Server running on port {port}', file=sys.stderr)
     server.serve_forever()
