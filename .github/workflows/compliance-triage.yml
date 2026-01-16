@@ -1,0 +1,45 @@
+
+name: AI Compliance Triage
+
+on:
+  issues:
+    types: [opened, reopened]
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, 'submission')
+    steps:
+      - name: Run Grok Compliance Evaluation
+        env:
+          GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
+        run: |
+          curl https://api.x.ai/v1/chat/completions \
+            -H "Authorization: Bearer $GROK_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "model": "grok-4",
+              "messages": [
+                {"role": "system", "content": "You are the TSM2 Institute AI compliance evaluator. Evaluate strictly against these 8 criteria: [paste full 8 from above]. Output: Scorecard table (Pass/Fail per criterion), Overall 🟢/🟡/🔴, Educational commentary, Revision guidance if needed. Use exact template from Compliance 2.1."},
+                {"role": "user", "content": "Evaluate this submission:\n\n${{ github.event.issue.body }}"}
+              ],
+              "temperature": 0.2
+            }' > response.json
+
+          # Extract comment from response (simple jq parse)
+          apt-get update && apt-get install -y jq
+          COMMENT=$(jq -r '.choices[0].message.content' response.json)
+
+          # Post comment
+          gh issue comment ${{ github.event.issue.number }} --body "$COMMENT" --repo ${{ github.repository }}
+
+          # Apply labels based on keywords in response (simplified — refine later)
+          if echo "$COMMENT" | grep -q "🟢"; then
+            gh issue edit ${{ github.event.issue.number }} --add-label "compliance-cleared" --repo ${{ github.repository }}
+          elif echo "$COMMENT" | grep -q "🟡"; then
+            gh issue edit ${{ github.event.issue.number }} --add-label "conditional" --repo ${{ github.repository }}
+          else
+            gh issue edit ${{ github.event.issue.number }} --add-label "non-compliant" --repo ${{ github.repository }}
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
