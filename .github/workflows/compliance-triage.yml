@@ -19,19 +19,23 @@ jobs:
         env:
           GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
+          # Build the request payload using jq for proper escaping
+          jq -n --arg body "$ISSUE_BODY" '{
+            "model": "grok-4",
+            "messages": [
+              {"role": "system", "content": "You are the TSM2 Institute AI compliance evaluator. Evaluate strictly against the locked Compliance 2.1 8 criteria:\n1. Claim Separation\n2. Definitions\n3. Scaling Consistency\n4. Locality of Measurement\n5. Falsifiability\n6. Evidence Hierarchy\n7. Minimal Ontology\n8. Rhetorical Neutrality\n\nOutput exactly: Markdown table with Criterion | Status (Pass/Fail) | Notes.\nOverall Compliance Outcome: 🟢 Compliant / 🟡 Conditional / 🔴 Non-Compliant.\nEducational Commentary section.\nRevision Guidance if needed.\nInstitute Note."},
+              {"role": "user", "content": ("Evaluate this submission strictly and neutrally:\n\n" + $body)}
+            ],
+            "temperature": 0.2,
+            "max_tokens": 2048
+          }' > request.json
+          
           curl https://api.x.ai/v1/chat/completions \
             -H "Authorization: Bearer $GROK_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{
-              "model": "grok-4",
-              "messages": [
-                {"role": "system", "content": "You are the TSM2 Institute AI compliance evaluator. Evaluate strictly against the locked Compliance 2.1 8 criteria:\n1. Claim Separation\n2. Definitions\n3. Scaling Consistency\n4. Locality of Measurement\n5. Falsifiability\n6. Evidence Hierarchy\n7. Minimal Ontology\n8. Rhetorical Neutrality\n\nOutput exactly: Markdown table with Criterion | Status (Pass/Fail) | Notes.\nOverall Compliance Outcome: 🟢 Compliant / 🟡 Conditional / 🔴 Non-Compliant.\nEducational Commentary section.\nRevision Guidance if needed.\nInstitute Note."},
-                {"role": "user", "content": "Evaluate this submission strictly and neutrally:\n\n${{ github.event.issue.body }}"}
-              ],
-              "temperature": 0.2,
-              "max_tokens": 2048
-            }' > response.json
+            -d @request.json > response.json
 
           # Extract AI response
           COMMENT=$(jq -r '.choices[0].message.content // "Error: No response"' response.json)
