@@ -1,4 +1,3 @@
-
 name: AI Compliance Triage
 
 on:
@@ -10,9 +9,16 @@ jobs:
     runs-on: ubuntu-latest
     if: contains(github.event.issue.labels.*.name, 'submission')
     steps:
+      - name: Install jq and gh CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+          echo "gh CLI already available in runner"
+
       - name: Run Grok Compliance Evaluation
         env:
           GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           curl https://api.x.ai/v1/chat/completions \
             -H "Authorization: Bearer $GROK_API_KEY" \
@@ -20,26 +26,24 @@ jobs:
             -d '{
               "model": "grok-4",
               "messages": [
-                {"role": "system", "content": "You are the TSM2 Institute AI compliance evaluator. Evaluate strictly against these 8 criteria: [paste full 8 from above]. Output: Scorecard table (Pass/Fail per criterion), Overall 🟢/🟡/🔴, Educational commentary, Revision guidance if needed. Use exact template from Compliance 2.1."},
-                {"role": "user", "content": "Evaluate this submission:\n\n${{ github.event.issue.body }}"}
+                {"role": "system", "content": "You are the TSM2 Institute AI compliance evaluator. Evaluate strictly against the locked Compliance 2.1 8 criteria:\n1. Claim Separation\n2. Definitions\n3. Scaling Consistency\n4. Locality of Measurement\n5. Falsifiability\n6. Evidence Hierarchy\n7. Minimal Ontology\n8. Rhetorical Neutrality\n\nOutput exactly: Markdown table with Criterion | Status (Pass/Fail) | Notes.\nOverall Compliance Outcome: 🟢 Compliant / 🟡 Conditional / 🔴 Non-Compliant.\nEducational Commentary section.\nRevision Guidance if needed.\nInstitute Note."},
+                {"role": "user", "content": "Evaluate this submission strictly and neutrally:\n\n${{ github.event.issue.body }}"}
               ],
-              "temperature": 0.2
+              "temperature": 0.2,
+              "max_tokens": 2048
             }' > response.json
 
-          # Extract comment from response (simple jq parse)
-          apt-get update && apt-get install -y jq
-          COMMENT=$(jq -r '.choices[0].message.content' response.json)
+          # Extract AI response
+          COMMENT=$(jq -r '.choices[0].message.content // "Error: No response"' response.json)
 
-          # Post comment
+          # Post scorecard comment
           gh issue comment ${{ github.event.issue.number }} --body "$COMMENT" --repo ${{ github.repository }}
 
-          # Apply labels based on keywords in response (simplified — refine later)
+          # Auto-label based on outcome emoji
           if echo "$COMMENT" | grep -q "🟢"; then
-            gh issue edit ${{ github.event.issue.number }} --add-label "compliance-cleared" --repo ${{ github.repository }}
+            gh issue edit ${{ github.event.issue.number }} --add-label "compliance-cleared" --remove-label "needs-triage" --repo ${{ github.repository }}
           elif echo "$COMMENT" | grep -q "🟡"; then
-            gh issue edit ${{ github.event.issue.number }} --add-label "conditional" --repo ${{ github.repository }}
+            gh issue edit ${{ github.event.issue.number }} --add-label "conditional" --remove-label "needs-triage" --repo ${{ github.repository }}
           else
-            gh issue edit ${{ github.event.issue.number }} --add-label "non-compliant" --repo ${{ github.repository }}
+            gh issue edit ${{ github.event.issue.number }} --add-label "non-compliant" --remove-label "needs-triage" --repo ${{ github.repository }}
           fi
-        env:
-          GH_TOKEN: ${{ github.token }}
