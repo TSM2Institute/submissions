@@ -7,6 +7,7 @@ import sys
 import uuid
 import cgi
 import io
+import replitmail
 
 class RequestHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -182,6 +183,8 @@ class RequestHandler(SimpleHTTPRequestHandler):
         if result.get('success'):
             print(f"User info received (private): {user_info.get('name', 'Unknown')} - {user_info.get('email', 'No email')}", file=sys.stderr)
             
+            self.send_submitter_notification(user_info, title, result.get('html_url'), result.get('number'))
+            
             response_data = {
                 'success': True,
                 'html_url': result.get('html_url'),
@@ -298,6 +301,38 @@ Respond in JSON format only:
         except Exception as e:
             print(f"Grok compliance check error: {str(e)}", file=sys.stderr)
             return None
+    
+    def send_submitter_notification(self, user_info, title, issue_url, issue_number):
+        try:
+            name = user_info.get('name', 'Not provided')
+            email = user_info.get('email', 'Not provided')
+            organization = user_info.get('organization', 'Not provided')
+            
+            email_subject = f"TSM2 Submission #{issue_number}: {title}"
+            
+            email_body = f"""New TSM2 Submission Received
+
+Submitter Details (Private):
+- Name: {name}
+- Email: {email}
+- Organization: {organization}
+
+Submission:
+- Title: {title}
+- Issue #: {issue_number}
+- GitHub URL: {issue_url}
+
+This information was kept private and is not visible on the public GitHub issue."""
+            
+            result = replitmail.send_email(email_subject, text=email_body)
+            
+            if result.get('success'):
+                print(f"Email notification sent successfully", file=sys.stderr)
+            else:
+                print(f"Email notification failed: {result.get('error')}", file=sys.stderr)
+                
+        except Exception as e:
+            print(f"Email notification error: {str(e)}", file=sys.stderr)
     
     def create_github_issue(self, title, body):
         github_token = os.environ.get('GITHUB_PAT')

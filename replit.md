@@ -47,6 +47,7 @@ Preferred communication style: Simple, everyday language.
 5. Grok AI performs quick compliance check on form fields
 6. Server creates GitHub Issue with submission details + PDF link
 7. AI compliance result included in issue
+8. Email notification sent to Institute Director with private submitter details
 
 ### Static File Serving
 - The Python server doubles as a static file server for the HTML frontend
@@ -61,6 +62,9 @@ Preferred communication style: Simple, everyday language.
   - Requires `GITHUB_PAT` environment variable
 - **Grok API**: AI compliance pre-checking
   - Requires `GROK_API_KEY` environment variable
+- **Replit Mail**: Email notifications for submitter details
+  - Sends to Institute Director's verified Replit email
+  - Uses internal Replit authentication (no API key needed)
 
 ### CDN Dependencies
 - **Tailwind CSS**: `https://cdn.tailwindcss.com`
@@ -88,3 +92,7 @@ Preferred communication style: Simple, everyday language.
 - Added `/uploads/` folder for PDF storage
 - Integrated Grok API for compliance checking
 - Added cache-control headers to prevent stale content
+- Added PDF validation (file type, size limit, header check)
+- Added filename sanitization for security
+- Added Replit Mail email notifications for submitter details
+- Cleaned up deployment config (removed conflicting port 80 workflow)
