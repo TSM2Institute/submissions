@@ -1,0 +1,414 @@
+Success, I have the git working after a lot of back and forth with replit and copilot in git, but its all done. Form gets filled in, issue is recorded, AI checks and gives result. Perfect.
+However, we need to change the whole process, so the we are in planning mode again. I think we can use all the elements we have, it’s just the form thats getting changed and what info and attachments are allowed.
+1. I always thought the form was too complicated for a submitter, Geoff has recognised this, and has with Chatpgpt come up with a new simpler solution.
+2. My understanding is: A simpler initial form, with simpler criteria, with the ability to upload a PDF of full theory.
+3. If so, can we handle large PDF’s for AI checking? (We can always upgrade Git Sub)
+4. If this is a choke point, we can do the following as back up: A. Once a issue has been raised, human gets issue URL, adds to pre -set grok chat, that will check and parse results B. Results are then added to git in comments for visibility.
+So thats my understanding of what you are about to read.  
+Lets discuss these changes after. And what the plan is.
+
+ChatGpt=====
+One change I would make would be ✅ or ❌ compliant or non-compliant. I the instructions for submission would explain what must and what must not be in the submission. 
+
+That is a very good refinement, and it strengthens the system in exactly the right way.
+
+You are proposing a move from graded narrative outcomes to binary structural outcomes, with the burden shifted to the submission instructions. That is textbook standards-body design.
+
+Below is a clear analysis and a recommended way to implement it without losing rigor.
+
+⸻
+
+Why your proposed change is sound
+
+1️⃣ Binary outcomes reduce ambiguity and argument
+
+Using only:
+	•	✅ Compliant
+	•	❌ Non-Compliant
+
+eliminates:
+	•	interpretive wiggle room
+	•	emotional attachment to “conditional” language
+	•	negotiation over partial acceptance
+
+This keeps the Institute out of debates and firmly in procedural territory.
+
+⸻
+
+2️⃣ Compliance becomes front-loaded
+
+By tightening the Submission Instructions, you ensure:
+	•	authors self-filter before submitting
+	•	incomplete frameworks never enter review
+	•	Examiner discretion is reduced (good)
+
+This is exactly how aviation, safety, and regulatory systems operate.
+
+⸻
+
+How to make this work without losing nuance
+
+The nuance doesn’t disappear — it just moves upstream.
+
+🔁 Shift nuance to pre-submission
+
+The submission instructions must clearly state:
+
+A submission must include
+	•	A single explicit claim
+	•	A defined causal mechanism
+	•	Energy or conservation accounting
+	•	Ontological commitments
+	•	Scale applicability
+	•	A falsifiability condition
+
+A submission must not include
+	•	Appeals to authority or consensus
+	•	Rhetorical or speculative language
+	•	Undefined terms
+	•	Metaphorical explanations
+	•	Claims immune to testing
+
+Anything missing → ❌ Non-Compliant
+
+No intermediate state required.
+
+⸻
+
+How Examiners would operate under this model
+
+Examiner output becomes:
+	•	Result: ✅ Compliant or ❌ Non-Compliant
+	•	Justification:
+	•	Cite specific missing or violated criteria
+
+That’s it.
+
+No recommendations.
+No coaching.
+No dialogue.
+
+This further protects Examiner neutrality.
+
+⸻
+
+What happens to “almost compliant” submissions?
+
+They are simply:
+
+❌ Non-Compliant (resubmission permitted)
+
+The resubmission pathway replaces “conditional acceptance”.
+
+This mirrors:
+	•	regulatory filings
+	•	patent submissions
+	•	safety certifications
+
+⸻
+
+Strategic benefit (important)
+
+This change:
+	•	reduces Examiner workload
+	•	reduces appeals
+	•	reduces accusations of bias
+	•	increases author responsibility
+	•	makes automation easier
+
+It also integrates beautifully with:
+	•	AI-assisted pre-screening
+	•	GitHub gating
+	•	automated completeness checks
+
+⸻
+
+Public messaging (simple and strong)
+
+The Institute does not partially certify claims.
+A submission either meets the compliance criteria or it does not.
+
+That’s extremely defensible.
+
+⸻
+
+Recommended implementation wording (concise)
+
+You could add one line to the Submission Instructions:
+
+Compliance Determination:
+Submissions are evaluated on a binary basis. A submission that fails to meet any mandatory criterion is deemed Non-Compliant. Authors may revise and resubmit without prejudice.
+
+That’s all that’s needed.
+
+⸻
+
+Bottom line
+
+Your instinct is correct.
+
+This change:
+✔ simplifies governance
+✔ strengthens neutrality
+✔ aligns with standards bodies
+✔ removes ambiguity
+✔ prepares the system for scale
+
+It’s a refinement that shows institutional maturity, not rigidity.
+
+
+=======
+
+Below is a clean, public-facing Submission Instructions document, rewritten to support your binary outcome model (✅ Compliant / ❌ Non-Compliant) and to shift responsibility fully onto the submitter.
+
+This is written as a standards document, not guidance or coaching.
+
+⸻
+
+Submission Instructions
+
+TSM2 Institute for Cosmology
+
+Purpose
+
+These instructions define the mandatory requirements for submitting material to the TSM2 Institute for Cosmology. The Institute conducts compliance review only. It does not assess correctness, truth, merit, originality, or alignment with existing theories.
+
+A submission either meets the compliance criteria or it does not.
+
+⸻
+
+Compliance Determination (Binary)
+
+All submissions are evaluated on a binary basis:
+	•	✅ Compliant — all mandatory criteria satisfied
+	•	❌ Non-Compliant — one or more mandatory criteria not satisfied
+
+There is no conditional or partial compliance.
+Non-compliant submissions may be revised and resubmitted without prejudice.
+
+⸻
+
+Mandatory Submission Requirements (ALL REQUIRED)
+
+A submission must include all of the following. Absence of any item results in Non-Compliance.
+
+1️⃣ Explicit Claim
+	•	A single, clearly stated claim
+	•	No compound or shifting claims
+	•	No rhetorical framing
+
+⸻
+
+2️⃣ Causal Mechanism
+	•	A defined cause → mechanism → effect sequence
+	•	Temporal ordering must be explicit
+	•	Mechanism must be physical or mathematically defined
+
+⸻
+
+3️⃣ Energy / Conservation Accounting
+	•	Explicit statement of how conservation laws are respected
+(energy, momentum, charge, etc., as applicable)
+	•	If conservation is reinterpreted, this must be stated explicitly
+
+⸻
+
+4️⃣ Ontological Commitments
+	•	All assumed entities, fields, or structures must be declared
+	•	No implicit or undefined constructs
+	•	No introduction of unnecessary entities
+
+⸻
+
+5️⃣ Scale & Domain of Applicability
+	•	Declared physical scale(s)
+	•	Declared boundary conditions
+	•	Statement of where the claim does not apply
+
+⸻
+
+6️⃣ Falsifiability Condition (Non-Negotiable)
+	•	At least one explicit condition under which the claim would be false
+	•	Must be testable in principle (now or in future)
+	•	Claims immune to falsification are not accepted
+
+⸻
+
+7️⃣ Definitions
+	•	All non-standard terms defined
+	•	Mathematical or physical meanings stated
+	•	No reliance on metaphor
+
+⸻
+
+8️⃣ Declaration & Acknowledgement
+	•	Submitter must affirm:
+	•	originality or proper attribution
+	•	acceptance of compliance outcomes
+	•	understanding that compliance ≠ endorsement
+
+Submission without explicit declaration is incomplete and rejected.
+
+⸻
+
+Prohibited Content (ANY = Non-Compliant)
+
+A submission must not include:
+	•	Appeals to authority or consensus
+	•	Rhetorical or emotive language
+	•	Metaphorical explanations presented as mechanisms
+	•	Claims framed as philosophy without testable structure
+	•	Undefined terms or implied entities
+	•	Assertions immune to testing
+	•	Personal attacks or advocacy
+
+⸻
+
+Examiner Interaction
+
+Examiners:
+	•	Do not provide coaching or suggestions
+	•	Do not negotiate outcomes
+	•	Do not judge correctness
+
+Examiner determinations cite criteria only.
+
+⸻
+
+Outcome & Resubmission
+	•	Non-Compliant submissions receive a criteria-based explanation
+	•	Authors may revise and resubmit at any time
+	•	No penalty, ranking, or record of failure is retained
+
+⸻
+
+Governing Statement
+
+The Institute does not decide what is true.
+It determines whether a claim is structured well enough to be tested.
+
+⸻
+
+Status
+
+These instructions are binding on all submissions and are subordinate only to the Institute Constitution and Compliance Policies.
+
+⸻
+
+Why this works
+	•	Removes ambiguity
+	•	Prevents ideological filtering
+	•	Protects Examiners
+	•	Enables automation
+	•	Scales cleanly
+
+If you wish, the natural next companion document would be:
+	•	Submission Categories (Reference / Framework / Hypothesis)
+or
+	•	Appeals & Audit Procedure (½ page)
+
+
+=======
+
+That is an excellent and necessary refinement. It closes several governance gaps at once and strengthens the Institute materially.
+
+Below is a clean institutional response, plus the exact wording you can drop into the Submission Instructions.
+
+⸻
+
+Why requiring a full PDF is the right move
+
+Requiring an attached PDF of the complete document:
+
+1️⃣ Establishes a fixed reference artifact
+	•	The submission is no longer just form fields
+	•	The PDF becomes the authoritative record
+	•	No ambiguity about “what was actually submitted”
+
+This mirrors:
+	•	journal submissions
+	•	patent filings
+	•	regulatory dossiers
+
+⸻
+
+2️⃣ Protects against post-hoc modification
+	•	Prevents quiet edits after review
+	•	Ensures compliance is assessed against a frozen document
+	•	Enables later audit, appeal, or citation
+
+This is essential once compliance outcomes carry weight.
+
+⸻
+
+3️⃣ Simplifies Examiner work
+	•	Examiners assess:
+	•	structured fields (for gating)
+	•	full PDF (for coherence and internal consistency)
+	•	No chasing missing context
+	•	No piecemeal interpretation
+
+⸻
+
+4️⃣ Strengthens the binary model
+
+With a PDF attached, the rule becomes clean:
+
+If the claim is not fully present and consistent in the PDF → ❌ Non-Compliant
+
+No exceptions.
+
+⸻
+
+Recommended wording (drop-in)
+
+You can add this as a mandatory requirement in the Submission Instructions:
+
+⸻
+
+9️⃣ Full Document Attachment (Mandatory)
+
+A submission must include a single PDF file containing the complete document to which the submission fields refer.
+
+The PDF must:
+	•	Contain the full argument, framework, or reference material
+	•	Be internally consistent with the submission fields
+	•	Represent the definitive version submitted for compliance review
+
+Submissions without an attached PDF, or with incomplete or inconsistent documents, are deemed Non-Compliant.
+
+The attached PDF constitutes the authoritative submission record for compliance, audit, and registry purposes.
+
+⸻
+
+Examiner posture (important)
+
+This requirement allows Examiners to say, cleanly and defensibly:
+
+“The submission fields assert compliance, but the attached document does not substantiate them.”
+
+→ ❌ Non-Compliant
+No debate required.
+
+⸻
+
+Side benefit (quiet but important)
+
+This also:
+	•	future-proofs the registry
+	•	allows long-term archival
+	•	enables citation by external parties
+	•	supports later automation (AI pre-screening, similarity checks)
+
+⸻
+
+Bottom line
+
+This refinement:
+✔ strengthens integrity
+✔ reduces ambiguity
+✔ simplifies review
+✔ supports audit
+✔ aligns with serious institutions
+
+It is exactly the kind of change that signals the system is moving from concept to infrastructure.
