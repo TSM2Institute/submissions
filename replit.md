@@ -2,11 +2,16 @@
 
 ## Overview
 
-This is a submission portal for the TSM2 Institute for Cosmology. The application allows users to submit scientific papers or proposals through a web interface, which are then automatically created as GitHub Issues in the repository for tracking and review.
+This is a submission portal for the TSM2 Institute for Cosmology. The application allows users to submit scientific papers or proposals through a simplified web interface using a **Binary Compliance Model**. Submissions are automatically created as GitHub Issues with attached PDF documents for review.
 
-The system follows a governance protocol where submissions go through compliance checking and examiner review before being registered.
+**Key Features:**
+- Binary compliance outcomes: Compliant or Non-Compliant (no partial acceptance)
+- Mandatory PDF upload as the authoritative record
+- User personal details kept private (not posted to GitHub)
+- AI compliance pre-check using Grok API
+- 5-step simplified form
 
-**Status:** Fully functional - submissions create GitHub Issues at TSM2Institute/submissions
+**Status:** Fully functional with new simplified form
 
 ## User Preferences
 
@@ -23,25 +28,39 @@ Preferred communication style: Simple, everyday language.
 ### Backend Architecture
 - **Python HTTP Server**: Custom `SimpleHTTPRequestHandler` extension
 - **API Endpoint**: `/api/submit` handles POST requests for form submissions
-- **Integration Pattern**: Submissions are converted to GitHub Issues via the GitHub API
-- **Authentication**: Uses GitHub Personal Access Token (PAT) stored in environment variable `GITHUB_PAT`
+- **PDF Storage**: Local `/uploads/` folder with public URLs
+- **AI Integration**: Grok API for compliance pre-checking
+- **GitHub Integration**: Creates Issues via GitHub API
+
+### Form Structure (5 Steps)
+1. **Your Information** - Name, Email, Organization (private, not in GitHub issue)
+2. **Submission Details** - Title, Core Claim, Primary Scale
+3. **Falsifiability Condition** - Required testable falsification criteria
+4. **Document Upload** - Mandatory PDF (up to 100MB)
+5. **Declaration** - Binary compliance acknowledgment
 
 ### Data Flow
-1. User fills out submission form on the frontend
-2. Form data is sent as JSON to `/api/submit`
-3. Server creates a GitHub Issue with the submission data
-4. Issue is labeled with `submission` and `needs-triage` for workflow tracking
+1. User fills out simplified 5-step form with PDF attachment
+2. Personal info collected but kept private
+3. Form data sent as multipart/form-data to `/api/submit`
+4. Server saves PDF to `/uploads/` folder
+5. Grok AI performs quick compliance check on form fields
+6. Server creates GitHub Issue with submission details + PDF link
+7. AI compliance result included in issue
 
 ### Static File Serving
 - The Python server doubles as a static file server for the HTML frontend
 - Public files (like governance documentation) are stored in `/public/files/`
+- PDFs are stored in `/uploads/` and served with public URLs
 
 ## External Dependencies
 
 ### Third-Party Services
-- **GitHub API**: Used to create issues for tracking submissions
+- **GitHub API**: Creates issues for tracking submissions
   - Repository: `TSM2Institute/submissions`
-  - Requires `GITHUB_PAT` environment variable with appropriate permissions
+  - Requires `GITHUB_PAT` environment variable
+- **Grok API**: AI compliance pre-checking
+  - Requires `GROK_API_KEY` environment variable
 
 ### CDN Dependencies
 - **Tailwind CSS**: `https://cdn.tailwindcss.com`
@@ -53,3 +72,19 @@ Preferred communication style: Simple, everyday language.
 | Variable | Purpose |
 |----------|---------|
 | `GITHUB_PAT` | GitHub Personal Access Token for creating issues |
+| `GROK_API_KEY` | Grok API key for AI compliance checking |
+
+## Recent Changes (January 2026)
+
+### Form Simplification
+- Reduced from 11 steps to 5 steps
+- Binary compliance model (Compliant / Non-Compliant)
+- Mandatory PDF upload as authoritative record
+- User personal details kept private
+- Added Grok AI compliance pre-check
+
+### Technical Updates
+- Added multipart form data handling for PDF uploads
+- Added `/uploads/` folder for PDF storage
+- Integrated Grok API for compliance checking
+- Added cache-control headers to prevent stale content
