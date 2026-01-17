@@ -1,0 +1,55 @@
+a clean, professional, minimal submission portal for TSM2 Institute for Cosmology.
+Binary compliance model: ✅ Compliant or ❌ Non-Compliant only.
+Mandatory PDF upload as authoritative record.
+User details collected but NOT posted to GitHub (privacy) — send via EmailJS or placeholder alert for now.
+
+Structure:
+
+1. Hero / Header:
+   - Title: "TSM2 Institute for Cosmology – Submission Portal"
+   - Subtitle: "Binary Compliance Gate – Structured Claims Only"
+   - Short text: "All submissions are evaluated on a binary basis (✅ Compliant / ❌ Non-Compliant). A full PDF document is mandatory and becomes the authoritative record."
+
+2. User Information Section (top of form):
+   - Fields: Name *, Email *, Organization (optional), Contact Number (optional), Website (optional)
+   - On submit: Do NOT include in GitHub issue body. Instead show alert: "Personal details will be sent privately to the Institute Director (not public). Proceed?"
+   - Or integrate EmailJS later (placeholder comment for now).
+
+3. Submission Form (multi-step with progress bar):
+   - Step 1: Basic Info
+     - Submission Title * (input, tooltip: "Clear, specific title – no rhetoric")
+     - One-Sentence Core Claim * (textarea, max 300 chars, tooltip: "Single explicit claim only. e.g., 'X causes Y via Z under conditions C.' No background.")
+     - Primary Scale * (dropdown: Laboratory / Planetary / Stellar / Galactic / Cosmic)
+
+   - Step 2: Falsifiability Condition *
+     - Textarea (tooltip: "What specific result would prove this claim false? Must be testable in principle.")
+
+   - Step 3: Full Document Upload *
+     - File input (accept=".pdf", max 100MB, tooltip: "Attach the complete PDF containing your full argument/framework. This is the definitive record for compliance review. <100MB recommended.")
+
+   - Step 4: Declaration *
+     - Checkbox: "I have read and accept the Submission Instructions. I understand compliance is binary (✅/❌), does not imply endorsement, and the attached PDF is the authoritative version." (required)
+
+   - Progress bar showing current step (1/4)
+   - Validation: All * fields required, PDF must be attached, checkbox checked.
+   - Submit button: "Submit for Compliance Review"
+
+4. On Submit:
+   - Collect form data (exclude user details)
+   - Format Markdown body for GitHub issue:
+
+
+Title: [input title]
+Core Claim: [claim]
+Primary Scale: [scale]
+Falsifiability Condition: [falsifiability]
+Declaration: Accepted
+PDF Attached: [filename]
+text
+
+- POST to GitHub API → create issue in TSM2Institute/submissions
+- Title: "[TSM2-SUB] {submission_title}"
+- Labels: ["submission", "needs-triage"]
+- Attach PDF via GitHub API if possible, or note filename
+- Show success message with direct link to created issue
+- Alert for user details: "Personal information sent privately (not public)."
