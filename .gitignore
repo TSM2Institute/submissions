@@ -1,0 +1,9 @@
+uploads/
+__pycache__/
+*.pyc
+*.pyo
+.cache/
+*.log
+.config/
+.local/
+.upm/
