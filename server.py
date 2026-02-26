@@ -1,4 +1,5 @@
 from http.server import HTTPServer, SimpleHTTPRequestHandler
+from socketserver import ThreadingMixIn
 import json
 import os
 import urllib.request
@@ -8,6 +9,11 @@ import uuid
 import cgi
 import io
 import replitmail
+
+
+class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
+    daemon_threads = True
+
 
 class RequestHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -403,11 +409,26 @@ This information was kept private and is not visible on the public GitHub issue.
     
     def end_headers(self):
         super().end_headers()
+    
+    def log_message(self, format, *args):
+        sys.stderr.write("%s - - [%s] %s\n" %
+                         (self.client_address[0],
+                          self.log_date_time_string(),
+                          format % args))
+        sys.stderr.flush()
+
+    def handle_one_request(self):
+        try:
+            super().handle_one_request()
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            pass
+        except Exception as e:
+            print(f"Request handling error: {type(e).__name__}: {e}", file=sys.stderr)
 
 if __name__ == '__main__':
     is_production = os.environ.get('REPLIT_DEPLOYMENT') is not None
     port = 80 if is_production else 5000
     print(f'Starting server on port {port}...', file=sys.stderr)
-    server = HTTPServer(('0.0.0.0', port), RequestHandler)
+    server = ThreadingHTTPServer(('0.0.0.0', port), RequestHandler)
     print(f'Server running on port {port}', file=sys.stderr)
     server.serve_forever()
