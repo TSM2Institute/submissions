@@ -309,14 +309,17 @@ Respond in JSON format only:
             return None
     
     def send_submitter_notification(self, user_info, title, issue_url, issue_number):
-        try:
-            name = user_info.get('name', 'Not provided')
-            email = user_info.get('email', 'Not provided')
-            organization = user_info.get('organization', 'Not provided')
-            
-            email_subject = f"TSM2 Submission #{issue_number}: {title}"
-            
-            email_body = f"""New TSM2 Submission Received
+        import threading
+        
+        def _send():
+            try:
+                name = user_info.get('name', 'Not provided')
+                email = user_info.get('email', 'Not provided')
+                organization = user_info.get('organization', 'Not provided')
+                
+                email_subject = f"TSM2 Submission #{issue_number}: {title}"
+                
+                email_body = f"""New TSM2 Submission Received
 
 Submitter Details (Private):
 - Name: {name}
@@ -329,16 +332,19 @@ Submission:
 - GitHub URL: {issue_url}
 
 This information was kept private and is not visible on the public GitHub issue."""
-            
-            result = replitmail.send_email(email_subject, text=email_body)
-            
-            if result.get('success'):
-                print(f"Email notification sent successfully", file=sys.stderr)
-            else:
-                print(f"Email notification failed: {result.get('error')}", file=sys.stderr)
                 
-        except Exception as e:
-            print(f"Email notification error: {str(e)}", file=sys.stderr)
+                result = replitmail.send_email(email_subject, text=email_body)
+                
+                if result.get('success'):
+                    print(f"Email notification sent successfully", file=sys.stderr)
+                else:
+                    print(f"Email notification failed: {result.get('error')}", file=sys.stderr)
+                    
+            except Exception as e:
+                print(f"Email notification error: {str(e)}", file=sys.stderr)
+        
+        t = threading.Thread(target=_send, daemon=True)
+        t.start()
     
     def create_github_issue(self, title, body):
         github_token = os.environ.get('GITHUB_PAT')
@@ -426,9 +432,37 @@ This information was kept private and is not visible on the public GitHub issue.
             print(f"Request handling error: {type(e).__name__}: {e}", file=sys.stderr)
 
 if __name__ == '__main__':
+    import signal
+    import atexit
+    
+    def on_exit():
+        print("SERVER PROCESS EXITING", file=sys.stderr)
+        sys.stderr.flush()
+    
+    atexit.register(on_exit)
+    
+    def handle_signal(signum, frame):
+        print(f"Received signal {signum}, ignoring...", file=sys.stderr)
+        sys.stderr.flush()
+    
+    signal.signal(signal.SIGTERM, handle_signal)
+    signal.signal(signal.SIGHUP, handle_signal)
+    
     is_production = os.environ.get('REPLIT_DEPLOYMENT') is not None
     port = 80 if is_production else 5000
     print(f'Starting server on port {port}...', file=sys.stderr)
+    sys.stderr.flush()
     server = ThreadingHTTPServer(('0.0.0.0', port), RequestHandler)
     print(f'Server running on port {port}', file=sys.stderr)
-    server.serve_forever()
+    sys.stderr.flush()
+    
+    while True:
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            print("Server stopped by user", file=sys.stderr)
+            break
+        except Exception as e:
+            print(f"Server error: {type(e).__name__}: {e}", file=sys.stderr)
+            sys.stderr.flush()
+            continue

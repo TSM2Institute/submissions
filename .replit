@@ -14,16 +14,25 @@ run = ["python", "server.py"]
 runButton = "Project"
 
 [[workflows.workflow]]
-name = "Website"
+name = "Project"
+mode = "parallel"
 author = "agent"
 
-[workflows.workflow.metadata]
-outputType = "webview"
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Website"
+
+[[workflows.workflow]]
+name = "Website"
+author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python server.py"
 waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [[ports]]
 localPort = 80
