@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 import json
@@ -433,36 +436,34 @@ This information was kept private and is not visible on the public GitHub issue.
 
 if __name__ == '__main__':
     import signal
-    import atexit
-    
-    def on_exit():
-        print("SERVER PROCESS EXITING", file=sys.stderr)
-        sys.stderr.flush()
-    
-    atexit.register(on_exit)
-    
-    def handle_signal(signum, frame):
-        print(f"Received signal {signum}, ignoring...", file=sys.stderr)
-        sys.stderr.flush()
-    
-    signal.signal(signal.SIGTERM, handle_signal)
-    signal.signal(signal.SIGHUP, handle_signal)
     
     is_production = os.environ.get('REPLIT_DEPLOYMENT') is not None
     port = 80 if is_production else 5000
+    
     print(f'Starting server on port {port}...', file=sys.stderr)
     sys.stderr.flush()
     server = ThreadingHTTPServer(('0.0.0.0', port), RequestHandler)
+    
+    def handle_shutdown(signum, frame):
+        print(f"Received signal {signum}, shutting down...", file=sys.stderr)
+        sys.stderr.flush()
+        server.shutdown()
+    
+    def handle_sighup(signum, frame):
+        print(f"Received SIGHUP, ignoring...", file=sys.stderr)
+        sys.stderr.flush()
+    
+    signal.signal(signal.SIGTERM, handle_shutdown)
+    signal.signal(signal.SIGHUP, handle_sighup)
+    
     print(f'Server running on port {port}', file=sys.stderr)
     sys.stderr.flush()
     
-    while True:
-        try:
-            server.serve_forever()
-        except KeyboardInterrupt:
-            print("Server stopped by user", file=sys.stderr)
-            break
-        except Exception as e:
-            print(f"Server error: {type(e).__name__}: {e}", file=sys.stderr)
-            sys.stderr.flush()
-            continue
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        print("Server stopped", file=sys.stderr)
+        sys.stderr.flush()
+        server.server_close()

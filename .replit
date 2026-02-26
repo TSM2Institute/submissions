@@ -1,14 +1,13 @@
 entrypoint = "index.html"
-modules = ["web", "python-3.11"]
+modules = ["python-3.11"]
 
 [nix]
 channel = "stable-24_11"
-packages = ["static-web-server"]
 
 [deployment]
 publicDir = "/"
 deploymentTarget = "autoscale"
-run = ["python", "server.py"]
+run = ["bash", "start.sh"]
 
 [workflows]
 runButton = "Project"
@@ -28,7 +27,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python server.py"
+args = "bash start.sh"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
