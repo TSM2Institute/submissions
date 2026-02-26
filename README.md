@@ -1,6 +1,6 @@
 # TSM2 Institute for Cosmology – Submission Portal
 
-A web-based submission portal for the TSM2 Institute for Cosmology. Scientists and researchers submit structured theoretical claims through a streamlined form, with mandatory PDF documentation. Submissions are evaluated using a **Binary Compliance Model** — each submission is either **Compliant** or **Non-Compliant**, with no partial acceptance.
+A web-based submission portal for the TSM2 Institute for Cosmology. Scientists and researchers submit structured theoretical claims through a streamlined form, with mandatory PDF documentation. Submissions are evaluated using a **Binary Structural Compliance Model** — each submission is either **Compliant** or **Non-Compliant**, with no partial acceptance. Structural compliance does not constitute scientific validation or endorsement.
 
 ---
 
@@ -22,7 +22,7 @@ A web-based submission portal for the TSM2 Institute for Cosmology. Scientists a
 | 2 | **Submission Details** | Title, Core Claim, Primary Scale |
 | 3 | **Falsifiability Condition** | A testable condition that could disprove the claim |
 | 4 | **Document Upload** | Mandatory PDF attachment (up to 100MB) |
-| 5 | **Declaration** | Acknowledgment of binary compliance rules |
+| 5 | **Declaration** | Acknowledgment of binary structural compliance rules |
 
 ### Privacy
 
@@ -48,7 +48,7 @@ The system uses Grok AI (via the xAI API) to perform an automated compliance scr
 - **PASSED** — All criteria met; submission proceeds normally
 - **NEEDS REVIEW** — One or more criteria flagged; submission still proceeds but is marked for closer review
 
-The AI result is included in the GitHub issue when available. This is a **pre-check only** — the final compliance decision is made by a human examiner.
+The AI pre-check evaluates structure, not scientific truth. The AI result is included in the GitHub issue when available. This is a **pre-check only** — the final compliance decision is made by a human examiner.
 
 > **Note:** The AI pre-check requires a valid `GROK_API_KEY`. If the key is not configured, submissions will still proceed but without AI compliance data in the issue.
 
@@ -85,6 +85,8 @@ Each submission creates a GitHub Issue in the `TSM2Institute/submissions` reposi
 4. Examiner uses the AI compliance result as initial guidance
 5. Examiner makes the **final binary decision**: Compliant or Non-Compliant
 6. Further governance steps (registration, archiving) follow the [Governance Protocol](public/files/governance.md)
+
+> **Note:** The Examiner decision applies only to structural compliance under Institute criteria and does not certify scientific correctness.
 
 ---
 

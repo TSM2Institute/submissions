@@ -2,10 +2,11 @@
 
 ## Overview
 
-This is a submission portal for the TSM2 Institute for Cosmology. The application allows users to submit scientific papers or proposals through a simplified web interface using a **Binary Compliance Model**. Submissions are automatically created as GitHub Issues with attached PDF documents for review.
+This is a submission portal for the TSM2 Institute for Cosmology. The application allows users to submit scientific papers or proposals through a simplified web interface using a **Binary Structural Compliance Model**. Submissions are automatically created as GitHub Issues with attached PDF documents for review.
 
 **Key Features:**
-- Binary compliance outcomes: Compliant or Non-Compliant (no partial acceptance)
+- Binary structural compliance outcomes: Compliant or Non-Compliant (no partial acceptance)
+- Structural compliance does not constitute scientific validation or endorsement
 - Mandatory PDF upload as the authoritative record
 - User personal details kept private (not posted to GitHub)
 - AI compliance pre-check using Grok API (4 criteria)
@@ -46,7 +47,7 @@ Preferred communication style: Simple, everyday language.
 - **API Endpoint**: `/api/submit` handles POST multipart/form-data submissions
 - **PDF Storage**: Local `/uploads/` folder with public URLs
 - **PDF Validation**: Extension check, magic bytes verification, 100MB size limit, filename sanitization
-- **AI Integration**: Grok API (`grok-3-mini`) for compliance pre-checking
+- **AI Integration**: Grok API (`grok-3-mini`) for structural compliance pre-checking (evaluates structure, not scientific truth)
 - **GitHub Integration**: Creates Issues via GitHub API in `TSM2Institute/submissions`
 - **Email Integration**: Replit Mail sends submitter details privately to Institute Director
 
@@ -55,7 +56,7 @@ Preferred communication style: Simple, everyday language.
 2. **Submission Details** - Title, Core Claim, Primary Scale
 3. **Falsifiability Condition** - Required testable falsification criteria
 4. **Document Upload** - Mandatory PDF (up to 100MB)
-5. **Declaration** - Binary compliance acknowledgment
+5. **Declaration** - Binary structural compliance acknowledgment
 
 ### AI Compliance Criteria (4 checks)
 1. Clear, single explicit claim (not compound or vague)
@@ -117,7 +118,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Form Simplification
 - Reduced from 11 steps to 5 steps
-- Binary compliance model (Compliant / Non-Compliant)
+- Binary structural compliance model (Compliant / Non-Compliant)
 - Mandatory PDF upload as authoritative record
 - User personal details kept private
 - Added Grok AI compliance pre-check (4 criteria)

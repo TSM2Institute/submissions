@@ -64,11 +64,18 @@
 <body class="font-inter bg-gray-50 text-gray-900 min-h-screen flex flex-col">
     <header class="hero-bg text-white py-12 md:py-16 relative">
         <div class="nebula-glow"></div>
+        <a href="https://tsm2institute.org" class="absolute top-4 left-4 md:top-6 md:left-6 z-20 flex items-center gap-2 text-blue-200/80 hover:text-white transition-colors text-sm font-medium">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Return to TSM2 Institute
+        </a>
         <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
             <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 tracking-tight">TSM2 Institute for Cosmology</h1>
             <h2 class="text-lg md:text-xl font-light text-blue-200 mb-4">Submission Portal</h2>
-            <p class="text-base md:text-lg font-medium text-blue-100 mb-2">Binary Compliance Gate – Structured Claims Only</p>
+            <p class="text-base md:text-lg font-medium text-blue-100 mb-2">Binary Structural Compliance Gate – Structured Claims Only</p>
             <p class="text-sm text-blue-200/80 max-w-2xl mx-auto leading-relaxed">All submissions are evaluated on a binary basis. A full PDF document is mandatory and becomes the authoritative record.</p>
+            <p class="text-xs text-blue-300/60 mt-2 italic">Structural compliance does not constitute scientific validation or endorsement.</p>
         </div>
     </header>
 
@@ -89,13 +96,14 @@
                 <div x-show="open" x-collapse class="border-t border-gray-100">
                     <div class="px-6 py-4">
                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                            <h4 class="font-semibold text-dark-blue mb-2">Compliance Determination (Binary)</h4>
-                            <p class="text-sm text-gray-700 mb-2">All submissions are evaluated on a binary basis:</p>
+                            <h4 class="font-semibold text-dark-blue mb-2">Structural Compliance Determination (Binary)</h4>
+                            <p class="text-sm text-gray-700 mb-2">All submissions are evaluated on a binary structural basis:</p>
                             <ul class="text-sm text-gray-700 space-y-1 ml-4">
                                 <li><span class="text-green-600 font-bold">✓</span> <strong>Compliant</strong> — all mandatory criteria satisfied</li>
                                 <li><span class="text-red-600 font-bold">✗</span> <strong>Non-Compliant</strong> — one or more mandatory criteria not satisfied</li>
                             </ul>
                             <p class="text-sm text-gray-600 mt-2">There is no conditional or partial compliance. Non-compliant submissions may be revised and resubmitted without prejudice.</p>
+                            <p class="text-xs text-gray-500 mt-2 italic">Structural compliance does not constitute scientific validation or endorsement.</p>
                         </div>
                         <div class="grid sm:grid-cols-2 gap-3">
                             <a href="/public/files/governance.md" target="_blank" class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-light-blue transition-colors group">
@@ -109,6 +117,105 @@
                                     <p class="text-xs text-gray-500">governance.md</p>
                                 </div>
                             </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-xl shadow-sm mb-6 overflow-hidden" x-data="{ openCriteria: null }">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h3 class="text-lg font-semibold text-dark-blue">Submission Criteria — What Your PDF Must Address</h3>
+                    <p class="text-sm text-gray-600 mt-1">All submissions are evaluated against these 9 structural criteria. Your PDF document must address each one. Criterion 10 is assessed by the Examiner only.</p>
+                </div>
+                <div class="divide-y divide-gray-100">
+                    <div>
+                        <button @click="openCriteria = openCriteria === 1 ? null : 1" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">1.</span>Explicit Claim</span>
+                            <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 1 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div x-show="openCriteria === 1" x-collapse class="px-6 pb-4">
+                            <p class="text-sm text-gray-600 pl-6">The submission must clearly state what it is claiming. No ambiguity. No implication. No inference. The claim must be singular and non-compound.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <button @click="openCriteria = openCriteria === 2 ? null : 2" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">2.</span>Definitions of Key Terms</span>
+                            <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 2 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div x-show="openCriteria === 2" x-collapse class="px-6 pb-4">
+                            <p class="text-sm text-gray-600 pl-6">All key terms must be clearly defined and used consistently. Undefined or framework-specific terminology results in non-compliance.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <button @click="openCriteria = openCriteria === 3 ? null : 3" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">3.</span>Declared Assumptions</span>
+                            <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 3 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div x-show="openCriteria === 3" x-collapse class="px-6 pb-4">
+                            <p class="text-sm text-gray-600 pl-6">All foundational assumptions must be explicitly declared. Hidden premises invalidate compliance. Assumptions must be stated, not implied.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <button @click="openCriteria = openCriteria === 4 ? null : 4" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">4.</span>Stated Mechanism (Causal Chain)</span>
+                            <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 4 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div x-show="openCriteria === 4" x-collapse class="px-6 pb-4">
+                            <p class="text-sm text-gray-600 pl-6">The submission must describe the physical mechanism connecting cause to effect. Provide a step-by-step causal sequence. Assertion without mechanism is non-compliant.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <button @click="openCriteria = openCriteria === 5 ? null : 5" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">5.</span>Energy / Conservation Consistency</span>
+                            <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 5 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div x-show="openCriteria === 5" x-collapse class="px-6 pb-4">
+                            <p class="text-sm text-gray-600 pl-6">Energy must be conserved, tracked, and accounted for. Demonstrate how the claim preserves conservation laws, or clearly state which law is modified and why. No undefined energy sources or sinks permitted.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <button @click="openCriteria = openCriteria === 6 ? null : 6" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">6.</span>Observational or Empirical Anchor</span>
+                            <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 6 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div x-show="openCriteria === 6" x-collapse class="px-6 pb-4">
+                            <p class="text-sm text-gray-600 pl-6">The submission must identify the dataset, measurable phenomenon, or observational reference that grounds the claim. State how the claim interacts with real-world data.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <button @click="openCriteria = openCriteria === 7 ? null : 7" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">7.</span>Falsifiability Condition</span>
+                            <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 7 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div x-show="openCriteria === 7" x-collapse class="px-6 pb-4">
+                            <p class="text-sm text-gray-600 pl-6">There must be at least one identifiable condition under which the claim could be proven wrong. If it cannot fail, it cannot pass.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <button @click="openCriteria = openCriteria === 8 ? null : 8" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">8.</span>Scale Consistency</span>
+                            <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 8 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div x-show="openCriteria === 8" x-collapse class="px-6 pb-4">
+                            <p class="text-sm text-gray-600 pl-6">The model must operate consistently at the declared physical scale. No cross-scale substitution without explicit justification.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <button @click="openCriteria = openCriteria === 9 ? null : 9" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">9.</span>Category Integrity</span>
+                            <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 9 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div x-show="openCriteria === 9" x-collapse class="px-6 pb-4">
+                            <p class="text-sm text-gray-600 pl-6">The claim must not replace physical causation with metaphor, geometry, or undefined abstraction. Physical claims must have physical mechanisms.</p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 border-t-2 border-gray-200">
+                        <button @click="openCriteria = openCriteria === 10 ? null : 10" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-100 transition-colors">
+                            <span class="font-medium text-gray-500 text-sm"><span class="text-gray-400 font-semibold mr-2">10.</span>Why Is This Claim True? <span class="inline-block ml-2 px-2 py-0.5 text-xs font-medium bg-gray-200 text-gray-600 rounded-full">Examiner Only</span></span>
+                            <svg class="w-4 h-4 text-gray-300 transition-transform" :class="{ 'rotate-180': openCriteria === 10 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div x-show="openCriteria === 10" x-collapse class="px-6 pb-4">
+                            <p class="text-sm text-gray-500 pl-6">The Examiner evaluates whether the submission answers in structured causal form: <strong>"Because X interacts with Y, therefore Z."</strong> This criterion is assessed by the qualified examiner, not by the submitter or the AI pre-check.</p>
                         </div>
                     </div>
                 </div>
@@ -278,8 +385,8 @@
                                         <span class="text-sm text-gray-700">
                                             I have read and accept the <a href="/public/files/governance.md" target="_blank" class="text-light-blue underline">Submission Instructions</a>. I understand that:
                                             <ul class="mt-2 ml-4 list-disc space-y-1 text-gray-600">
-                                                <li>Compliance is binary (Compliant / Non-Compliant)</li>
-                                                <li>Compliance does not imply endorsement of the claim</li>
+                                                <li>Structural compliance is binary (Compliant / Non-Compliant)</li>
+                                                <li>Structural compliance does not mean "Scientifically Proven" — it confirms the submission meets intake criteria only</li>
                                                 <li>The attached PDF is the authoritative version for review</li>
                                                 <li>Non-compliant submissions may be revised and resubmitted</li>
                                             </ul>
@@ -306,8 +413,9 @@
                                     </svg>
                                 </template>
                                 <div>
-                                    <p class="font-medium" :class="complianceResult?.compliant ? 'text-green-800' : 'text-amber-800'" x-text="complianceResult?.compliant ? 'Initial Compliance Check: PASSED' : 'Initial Compliance Check: Review Needed'"></p>
+                                    <p class="font-medium" :class="complianceResult?.compliant ? 'text-green-800' : 'text-amber-800'" x-text="complianceResult?.compliant ? 'AI Structural Pre-Check: PASSED' : 'AI Structural Pre-Check: Review Needed'"></p>
                                     <p class="text-sm mt-1" :class="complianceResult?.compliant ? 'text-green-700' : 'text-amber-700'" x-text="complianceResult?.message"></p>
+                                    <p class="text-xs mt-2 text-gray-500 italic">The AI pre-check evaluates structure, not scientific truth.</p>
                                 </div>
                             </div>
                         </div>
