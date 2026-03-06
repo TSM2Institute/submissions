@@ -177,13 +177,60 @@ class RequestHandler(SimpleHTTPRequestHandler):
             )
             
             if compliance_result:
-                compliance_section = f"""
+                criteria_list = compliance_result.get('criteria', [])
+                overall = compliance_result.get('overall', 'NEEDS REVIEW')
+                summary = compliance_result.get('message', 'No summary provided.')
+                is_error = compliance_result.get('error', False)
+                
+                if is_error or overall == "UNAVAILABLE":
+                    compliance_section = f"""
 
 ---
 
-### AI Compliance Pre-Check
-- **Status:** {'PASSED' if compliance_result.get('compliant') else 'NEEDS REVIEW'}
-- **Notes:** {compliance_result.get('message', 'No additional notes')}
+### AI Structural Pre-Check (9-Criteria Scorecard)
+
+> **This is an automated structural screening, not a scientific evaluation.**
+
+**Overall: UNAVAILABLE**
+
+AI pre-check could not be completed. This does not affect the submission — it will proceed to manual review.
+
+**Reason:** {summary}
+"""
+                elif criteria_list:
+                    scorecard_rows = ""
+                    for c in criteria_list:
+                        scorecard_rows += f"| {c.get('id', '')} | {c.get('name', '')} | {c.get('status', '')} | {c.get('note', '')} |\n"
+                    
+                    compliance_section = f"""
+
+---
+
+### AI Structural Pre-Check (9-Criteria Scorecard)
+
+> **This is an automated structural screening, not a scientific evaluation.**
+> The AI pre-check evaluates structure, not scientific truth.
+> Final compliance determination is made by a qualified examiner.
+
+**Overall: {overall}**
+
+| # | Criterion | Status | Note |
+|---|-----------|--------|------|
+{scorecard_rows}
+**Summary:** {summary}
+"""
+                else:
+                    compliance_section = f"""
+
+---
+
+### AI Structural Pre-Check (9-Criteria Scorecard)
+
+> **This is an automated structural screening, not a scientific evaluation.**
+
+**Overall: {overall}**
+
+**Summary:** {summary}
 """
                 body_text += compliance_section
         
@@ -200,7 +247,8 @@ class RequestHandler(SimpleHTTPRequestHandler):
                 'number': result.get('number')
             }
             if compliance_result:
-                response_data['complianceCheck'] = compliance_result
+                frontend_check = {k: v for k, v in compliance_result.items() if k != 'error'}
+                response_data['complianceCheck'] = frontend_check
             
             self.send_json_response(200, response_data)
         else:
@@ -239,35 +287,75 @@ class RequestHandler(SimpleHTTPRequestHandler):
         grok_api_key = os.environ.get('GROK_API_KEY')
         if not grok_api_key:
             print("GROK_API_KEY not configured, skipping compliance check", file=sys.stderr)
-            return None
+            return {
+                "compliant": False,
+                "message": "AI pre-check not configured.",
+                "overall": "UNAVAILABLE",
+                "criteria": [],
+                "error": True
+            }
         
         try:
-            prompt = f"""You are an AI compliance checker for the TSM2 Institute for Cosmology. 
-Your task is to evaluate if a submission meets basic structural requirements for scientific claims.
+            submission_title = form_data.get('submission_title', 'Not provided')
+            core_claim = form_data.get('core_claim', 'Not provided')
+            primary_scale = form_data.get('primary_scale', 'Not provided')
+            falsifiability = form_data.get('falsifiability', 'Not provided')
+            criteria_definitions = form_data.get('criteria_definitions', False)
+            criteria_assumptions = form_data.get('criteria_assumptions', False)
+            criteria_mechanism = form_data.get('criteria_mechanism', False)
+            criteria_energy = form_data.get('criteria_energy', False)
+            criteria_empirical = form_data.get('criteria_empirical', False)
+            criteria_category = form_data.get('criteria_category', False)
 
-Evaluate the following submission:
+            prompt = f"""You are screening a submission to the TSM2 Institute for Cosmology against 9 structural criteria. Evaluate structure and completeness only — do NOT judge scientific merit or correctness.
 
-**Title:** {form_data.get('submission_title', 'Not provided')}
+SUBMISSION DATA:
+- Title: {submission_title}
+- Core Claim: {core_claim}
+- Primary Scale: {primary_scale}
+- Falsifiability Condition: {falsifiability}
 
-**Core Claim:** {form_data.get('core_claim', 'Not provided')}
+SUBMITTER SELF-CERTIFICATION:
+The submitter has confirmed their PDF addresses the following (these are declarations, not content you can verify — note them as "Declared by submitter"):
+- Key terms defined: {criteria_definitions}
+- Assumptions declared: {criteria_assumptions}
+- Mechanism described: {criteria_mechanism}
+- Energy conservation addressed: {criteria_energy}
+- Empirical anchor identified: {criteria_empirical}
+- Category integrity maintained: {criteria_category}
 
-**Primary Scale:** {form_data.get('primary_scale', 'Not provided')}
+EVALUATE AGAINST THESE 9 CRITERIA:
 
-**Falsifiability Condition:** {form_data.get('falsifiability', 'Not provided')}
+1. EXPLICIT CLAIM — Is the core claim singular, clear, and non-compound? (Assess from the Core Claim field)
+2. KEY TERM DEFINITIONS — Has the submitter declared their PDF defines key terms? (Check self-certification)
+3. DECLARED ASSUMPTIONS — Has the submitter declared their PDF states assumptions? (Check self-certification)
+4. STATED MECHANISM — Has the submitter declared their PDF describes a causal mechanism? (Check self-certification)
+5. ENERGY CONSERVATION — Has the submitter declared their PDF addresses conservation laws? (Check self-certification)
+6. EMPIRICAL ANCHOR — Has the submitter declared their PDF identifies observational grounding? (Check self-certification)
+7. FALSIFIABILITY — Is the falsifiability condition testable and specific? (Assess from the Falsifiability field)
+8. SCALE CONSISTENCY — Is a physical or cosmological scale stated? Does the claim appear consistent with that scale? (Assess from Primary Scale and Core Claim fields)
+9. CATEGORY INTEGRITY — Does the core claim use physical causation rather than metaphor or undefined abstraction? (Assess from the Core Claim field)
 
-Check if the submission:
-1. Has a clear, single explicit claim (not compound or vague)
-2. Provides a testable falsifiability condition
-3. Avoids rhetorical or emotive language
-4. States a physical or cosmological scale
+For criteria 2-6: If the submitter has self-certified (true), mark as "DECLARED" with a note. If false, mark as "MISSING".
+For criteria 1, 7, 8, 9: Assess the actual content provided in the form fields.
 
-Respond in JSON format only:
-{{"compliant": true/false, "message": "Brief explanation (1-2 sentences)"}}"""
+Respond in this exact JSON format only — no markdown, no preamble:
+{{"criteria": [{{"id": 1, "name": "Explicit Claim", "status": "PASS|FLAG|MISSING", "note": "Brief explanation"}}, {{"id": 2, "name": "Key Term Definitions", "status": "DECLARED|MISSING", "note": "Brief explanation"}}, {{"id": 3, "name": "Declared Assumptions", "status": "DECLARED|MISSING", "note": "Brief explanation"}}, {{"id": 4, "name": "Stated Mechanism", "status": "DECLARED|MISSING", "note": "Brief explanation"}}, {{"id": 5, "name": "Energy Conservation", "status": "DECLARED|MISSING", "note": "Brief explanation"}}, {{"id": 6, "name": "Empirical Anchor", "status": "DECLARED|MISSING", "note": "Brief explanation"}}, {{"id": 7, "name": "Falsifiability", "status": "PASS|FLAG", "note": "Brief explanation"}}, {{"id": 8, "name": "Scale Consistency", "status": "PASS|FLAG", "note": "Brief explanation"}}, {{"id": 9, "name": "Category Integrity", "status": "PASS|FLAG", "note": "Brief explanation"}}], "overall": "PASSED|NEEDS REVIEW", "summary": "One sentence overall assessment"}}
+
+Status values:
+- PASS = criterion clearly met based on assessed content
+- DECLARED = submitter self-certified their PDF addresses this (cannot be verified from form data alone)
+- FLAG = potential issue identified — examiner should check
+- MISSING = not addressed or not certified
+
+Overall result:
+- PASSED = all criteria are PASS or DECLARED, no FLAGS or MISSING
+- NEEDS REVIEW = one or more criteria are FLAG or MISSING"""
 
             request_data = {
                 "model": "grok-3-mini",
                 "messages": [
-                    {"role": "system", "content": "You are a compliance checker. Respond only with valid JSON."},
+                    {"role": "system", "content": "You are a structural compliance screener for the TSM2 Institute for Cosmology. You evaluate whether submissions meet 9 defined structural criteria. You assess structure and completeness, not scientific truth. Respond only with valid JSON."},
                     {"role": "user", "content": prompt}
                 ],
                 "temperature": 0.3
@@ -297,19 +385,54 @@ Respond in JSON format only:
                 content = content.strip()
                 
                 try:
-                    compliance_data = json.loads(content)
-                    print(f"Grok compliance check: {compliance_data}", file=sys.stderr)
-                    return compliance_data
+                    ai_result = json.loads(content)
+                    print(f"Grok compliance check: {ai_result}", file=sys.stderr)
+                    
+                    if "criteria" not in ai_result and "compliant" in ai_result:
+                        overall = "PASSED" if ai_result["compliant"] else "NEEDS REVIEW"
+                        summary = ai_result.get("message", "Legacy format response.")
+                        criteria = []
+                        compliant = ai_result["compliant"]
+                    else:
+                        criteria = ai_result.get("criteria", [])
+                        overall = ai_result.get("overall", "NEEDS REVIEW")
+                        summary = ai_result.get("summary", "No summary provided.")
+                        compliant = (overall == "PASSED")
+                    
+                    return {
+                        "compliant": compliant,
+                        "message": summary,
+                        "overall": overall,
+                        "criteria": criteria
+                    }
                 except json.JSONDecodeError:
                     print(f"Could not parse Grok response: {content}", file=sys.stderr)
-                    return {"compliant": True, "message": "Compliance check completed (parsing note)"}
+                    return {
+                        "compliant": False,
+                        "message": "AI pre-check returned an unexpected format. Manual review required.",
+                        "overall": "NEEDS REVIEW",
+                        "criteria": []
+                    }
                     
         except urllib.error.HTTPError as e:
-            print(f"Grok API error: {e.code} - {e.read().decode()}", file=sys.stderr)
-            return None
+            error_msg = e.read().decode()
+            print(f"Grok API error: {e.code} - {error_msg}", file=sys.stderr)
+            return {
+                "compliant": False,
+                "message": f"Grok API error (HTTP {e.code}). Manual review required.",
+                "overall": "UNAVAILABLE",
+                "criteria": [],
+                "error": True
+            }
         except Exception as e:
             print(f"Grok compliance check error: {str(e)}", file=sys.stderr)
-            return None
+            return {
+                "compliant": False,
+                "message": f"AI pre-check error: {str(e)}. Manual review required.",
+                "overall": "UNAVAILABLE",
+                "criteria": [],
+                "error": True
+            }
     
     def send_submitter_notification(self, user_info, title, issue_url, issue_number):
         import threading

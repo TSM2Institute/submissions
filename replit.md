@@ -61,11 +61,16 @@ Preferred communication style: Simple, everyday language.
 5. **Document Upload** - Mandatory PDF (up to 100MB)
 6. **Declaration** - Binary structural compliance acknowledgment
 
-### AI Compliance Criteria (4 checks)
-1. Clear, single explicit claim (not compound or vague)
-2. Testable falsifiability condition provided
-3. No rhetorical or emotive language
-4. Physical or cosmological scale stated
+### AI Compliance Criteria (9-criteria scorecard)
+1. Explicit Claim — singular, clear, non-compound (assessed from form)
+2. Key Term Definitions — submitter self-certification
+3. Declared Assumptions — submitter self-certification
+4. Stated Mechanism — submitter self-certification
+5. Energy Conservation — submitter self-certification
+6. Empirical Anchor — submitter self-certification
+7. Falsifiability — testable and specific (assessed from form)
+8. Scale Consistency — physical scale stated (assessed from form)
+9. Category Integrity — physical causation, not metaphor (assessed from form)
 
 ### Data Flow
 1. User fills out 6-step form with criteria confirmation and PDF attachment
