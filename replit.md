@@ -10,7 +10,8 @@ This is a submission portal for the TSM2 Institute for Cosmology. The applicatio
 - Mandatory PDF upload as the authoritative record
 - User personal details kept private (not posted to GitHub)
 - AI compliance pre-check using Grok API (4 criteria)
-- 5-step simplified form
+- 6-step form with criteria self-certification checkboxes
+- Criteria declaration checkboxes (6 structural criteria confirmed by submitter)
 - Email notification to Institute Director with private submitter details
 
 **Status:** Fully functional and published
@@ -22,7 +23,8 @@ Preferred communication style: Simple, everyday language.
 ## Project Structure
 
 ```
-├── index.html          # Frontend (single-page app with 5-step form)
+├── index.html          # Frontend (single-page app with 6-step form)
+├── start.sh            # Auto-restart wrapper for server.py
 ├── server.py           # Backend (Python HTTP server + API endpoint)
 ├── replitmail.py       # Email notification utility (Replit Mail API)
 ├── replit.md           # Replit-specific project documentation (this file)
@@ -51,12 +53,13 @@ Preferred communication style: Simple, everyday language.
 - **GitHub Integration**: Creates Issues via GitHub API in `TSM2Institute/submissions`
 - **Email Integration**: Replit Mail sends submitter details privately to Institute Director
 
-### Form Structure (5 Steps)
+### Form Structure (6 Steps)
 1. **Your Information** - Name, Email, Organization (private, not in GitHub issue)
 2. **Submission Details** - Title, Core Claim, Primary Scale
-3. **Falsifiability Condition** - Required testable falsification criteria
-4. **Document Upload** - Mandatory PDF (up to 100MB)
-5. **Declaration** - Binary structural compliance acknowledgment
+3. **Criteria Confirmation** - 6 checkboxes confirming PDF addresses criteria 2,3,4,5,6,9
+4. **Falsifiability Condition** - Required testable falsification criteria
+5. **Document Upload** - Mandatory PDF (up to 100MB)
+6. **Declaration** - Binary structural compliance acknowledgment
 
 ### AI Compliance Criteria (4 checks)
 1. Clear, single explicit claim (not compound or vague)
@@ -65,7 +68,7 @@ Preferred communication style: Simple, everyday language.
 4. Physical or cosmological scale stated
 
 ### Data Flow
-1. User fills out simplified 5-step form with PDF attachment
+1. User fills out 6-step form with criteria confirmation and PDF attachment
 2. Personal info collected but kept private
 3. Form data sent as multipart/form-data to `/api/submit`
 4. Server validates PDF (extension, header, size, filename sanitization)
@@ -111,7 +114,7 @@ Preferred communication style: Simple, everyday language.
 ## Deployment
 
 - **Target**: Autoscale
-- **Run command**: `python server.py`
+- **Run command**: `bash start.sh`
 - **Port**: 5000 (internal) mapped to 80 (external)
 
 ## Recent Changes (January 2026)

@@ -322,7 +322,71 @@
                         </div>
 
                         <div x-show="currentStep === 3" x-transition>
-                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 3: Falsifiability Condition</h4>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 3: Criteria Confirmation</h4>
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                                <p class="text-sm text-blue-800">Your PDF document is the authoritative record. Please confirm it addresses each of the following structural criteria. All boxes must be checked to proceed.</p>
+                                <p class="text-xs text-blue-600 mt-1"><a href="#" @click.prevent="window.scrollTo({top: 0, behavior: 'smooth'})" class="underline hover:text-blue-800">See full criteria descriptions above</a></p>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                    <label class="flex items-start gap-3 cursor-pointer">
+                                        <input type="checkbox" x-model="form.criteria_definitions" class="mt-1 rounded text-light-blue focus:ring-light-blue">
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-900">Key Terms Defined</span>
+                                            <p class="text-xs text-gray-500 mt-0.5">My PDF defines all non-standard or framework-specific terminology used in the claim.</p>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                    <label class="flex items-start gap-3 cursor-pointer">
+                                        <input type="checkbox" x-model="form.criteria_assumptions" class="mt-1 rounded text-light-blue focus:ring-light-blue">
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-900">Assumptions Declared</span>
+                                            <p class="text-xs text-gray-500 mt-0.5">My PDF explicitly states all foundational assumptions upon which the claim depends.</p>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                    <label class="flex items-start gap-3 cursor-pointer">
+                                        <input type="checkbox" x-model="form.criteria_mechanism" class="mt-1 rounded text-light-blue focus:ring-light-blue">
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-900">Mechanism Described</span>
+                                            <p class="text-xs text-gray-500 mt-0.5">My PDF describes the physical mechanism connecting cause to effect, with a step-by-step causal sequence.</p>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                    <label class="flex items-start gap-3 cursor-pointer">
+                                        <input type="checkbox" x-model="form.criteria_energy" class="mt-1 rounded text-light-blue focus:ring-light-blue">
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-900">Energy Conservation Addressed</span>
+                                            <p class="text-xs text-gray-500 mt-0.5">My PDF demonstrates how the claim preserves conservation laws, or states which law is modified and why.</p>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                    <label class="flex items-start gap-3 cursor-pointer">
+                                        <input type="checkbox" x-model="form.criteria_empirical" class="mt-1 rounded text-light-blue focus:ring-light-blue">
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-900">Empirical Anchor Identified</span>
+                                            <p class="text-xs text-gray-500 mt-0.5">My PDF identifies the dataset, measurable phenomenon, or observational reference that grounds the claim.</p>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                    <label class="flex items-start gap-3 cursor-pointer">
+                                        <input type="checkbox" x-model="form.criteria_category" class="mt-1 rounded text-light-blue focus:ring-light-blue">
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-900">Category Integrity Maintained</span>
+                                            <p class="text-xs text-gray-500 mt-0.5">My PDF does not replace physical causation with metaphor, geometry, or undefined abstraction.</p>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div x-show="currentStep === 4" x-transition>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 4: Falsifiability Condition</h4>
                             <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
                                 <p class="text-sm text-blue-800"><strong>Required:</strong> At least one explicit condition under which the claim would be false. Must be testable in principle (now or in future). Claims immune to falsification are not accepted.</p>
                             </div>
@@ -335,8 +399,8 @@
                             </div>
                         </div>
 
-                        <div x-show="currentStep === 4" x-transition>
-                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 4: Full Document Upload</h4>
+                        <div x-show="currentStep === 5" x-transition>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 5: Full Document Upload</h4>
                             <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
                                 <p class="text-sm text-blue-800"><strong>Mandatory:</strong> Attach the complete PDF containing your full argument/framework. This is the definitive record for compliance review.</p>
                             </div>
@@ -376,8 +440,8 @@
                             </div>
                         </div>
 
-                        <div x-show="currentStep === 5" x-transition>
-                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 5: Declaration</h4>
+                        <div x-show="currentStep === 6" x-transition>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 6: Declaration</h4>
                             <div class="space-y-5">
                                 <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                                     <label class="flex items-start gap-3 cursor-pointer">
@@ -457,8 +521,8 @@
         function submissionForm() {
             return {
                 currentStep: 1,
-                totalSteps: 5,
-                stepLabels: ['Your Info', 'Details', 'Falsifiability', 'Document', 'Declaration'],
+                totalSteps: 6,
+                stepLabels: ['Your Info', 'Details', 'Criteria', 'Falsifiability', 'Document', 'Declaration'],
                 isSubmitting: false,
                 submitted: false,
                 issueUrl: '',
@@ -479,6 +543,12 @@
                     core_claim: '',
                     primary_scale: '',
                     falsifiability: '',
+                    criteria_definitions: false,
+                    criteria_assumptions: false,
+                    criteria_mechanism: false,
+                    criteria_energy: false,
+                    criteria_empirical: false,
+                    criteria_category: false,
                     declaration: false
                 },
 
@@ -535,18 +605,24 @@
                             }
                             return true;
                         case 3:
+                            if (!this.form.criteria_definitions || !this.form.criteria_assumptions || !this.form.criteria_mechanism || !this.form.criteria_energy || !this.form.criteria_empirical || !this.form.criteria_category) {
+                                this.error = 'Please confirm your PDF addresses all structural criteria before proceeding.';
+                                return false;
+                            }
+                            return true;
+                        case 4:
                             if (!this.form.falsifiability.trim()) {
                                 this.error = 'Falsifiability condition is required.';
                                 return false;
                             }
                             return true;
-                        case 4:
+                        case 5:
                             if (!this.pdfFile) {
                                 this.error = 'PDF document is required.';
                                 return false;
                             }
                             return true;
-                        case 5:
+                        case 6:
                             if (!this.form.declaration) {
                                 this.error = 'You must accept the declaration to submit.';
                                 return false;
@@ -585,6 +661,21 @@ ${this.form.core_claim}
 
 ### Falsifiability Condition
 ${this.form.falsifiability}
+
+---
+
+### Criteria Self-Certification
+
+The submitter has confirmed their PDF addresses:
+
+- [x] Key terms defined (Criterion 2)
+- [x] Assumptions declared (Criterion 3)
+- [x] Mechanism described (Criterion 4)
+- [x] Energy conservation addressed (Criterion 5)
+- [x] Empirical anchor identified (Criterion 6)
+- [x] Category integrity maintained (Criterion 9)
+
+*Note: Criteria 1 (Explicit Claim), 7 (Falsifiability), and 8 (Scale) are captured in form fields above.*
 
 ---
 
