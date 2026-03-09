@@ -371,7 +371,8 @@ Overall result:
                 data=json.dumps(request_data).encode('utf-8'),
                 headers={
                     'Authorization': f'Bearer {grok_api_key}',
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'TSM2-Submission-Portal'
                 },
                 method='POST'
             )
