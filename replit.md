@@ -78,10 +78,12 @@ Preferred communication style: Simple, everyday language.
 3. Form data sent as multipart/form-data to `/api/submit`
 4. Server validates PDF (extension, header, size, filename sanitization)
 5. Server saves PDF to `/uploads/` folder with unique prefix
-6. Grok AI performs compliance check on form fields (4 criteria)
+6. Grok AI performs 9-criteria scorecard compliance check on form fields
 7. Server creates GitHub Issue with submission details + PDF link
-8. AI compliance result (PASSED/NEEDS REVIEW) included in issue
-9. Email notification sent to Institute Director with private submitter details
+8. AI scorecard (PASSED/NEEDS REVIEW/UNAVAILABLE) included in issue
+9. GitHub labels auto-applied (Pending Review + screening result)
+10. Email notification sent to Institute Director with private submitter details
+11. Email notification sent to submitter with receipt and AI screening results
 
 ### Static File Serving
 - The Python server doubles as a static file server for the HTML frontend

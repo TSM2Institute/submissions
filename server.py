@@ -239,7 +239,12 @@ AI pre-check could not be completed. This does not affect the submission — it 
         if result.get('success'):
             print(f"User info received (private): {user_info.get('name', 'Unknown')} - {user_info.get('email', 'No email')}", file=sys.stderr)
             
-            self.send_submitter_notification(user_info, title, result.get('html_url'), result.get('number'))
+            issue_number = result.get('number')
+            issue_url = result.get('html_url')
+            
+            self.apply_github_labels(issue_number, compliance_result)
+            self.send_examiner_notification(user_info, title, issue_url, issue_number)
+            self.send_submitter_email(user_info, form_data, issue_number, compliance_result)
             
             response_data = {
                 'success': True,
@@ -416,7 +421,8 @@ Overall result:
                     
         except urllib.error.HTTPError as e:
             error_msg = e.read().decode()
-            print(f"Grok API error: {e.code} - {error_msg}", file=sys.stderr)
+            print(f"[GROK ERROR] Status: {e.code}, Body: {error_msg[:500]}", file=sys.stderr)
+            sys.stderr.flush()
             return {
                 "compliant": False,
                 "message": f"Grok API error (HTTP {e.code}). Manual review required.",
@@ -434,7 +440,47 @@ Overall result:
                 "error": True
             }
     
-    def send_submitter_notification(self, user_info, title, issue_url, issue_number):
+    def apply_github_labels(self, issue_number, compliance_result):
+        import threading
+        
+        def _apply():
+            github_token = os.environ.get('GITHUB_PAT')
+            if not github_token:
+                print("Cannot apply labels: GITHUB_PAT not configured", file=sys.stderr)
+                return
+            
+            overall = compliance_result.get('overall', 'UNAVAILABLE') if compliance_result else 'UNAVAILABLE'
+            
+            labels = ["Pending Review"]
+            if overall == "PASSED":
+                labels.append("Screening: Passed")
+            elif overall == "NEEDS REVIEW":
+                labels.append("Screening: Needs Review")
+            else:
+                labels.append("Screening: Unavailable")
+            
+            try:
+                url = f'https://api.github.com/repos/TSM2Institute/submissions/issues/{issue_number}/labels'
+                req = urllib.request.Request(
+                    url,
+                    data=json.dumps({"labels": labels}).encode('utf-8'),
+                    headers={
+                        'Authorization': f'token {github_token}',
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'TSM2-Submission-Portal'
+                    },
+                    method='POST'
+                )
+                with urllib.request.urlopen(req, timeout=15) as response:
+                    print(f"Labels applied to issue #{issue_number}: {labels}", file=sys.stderr)
+            except Exception as e:
+                print(f"Failed to apply labels to issue #{issue_number}: {str(e)}", file=sys.stderr)
+        
+        t = threading.Thread(target=_apply, daemon=True)
+        t.start()
+    
+    def send_examiner_notification(self, user_info, title, issue_url, issue_number):
         import threading
         
         def _send():
@@ -462,12 +508,87 @@ This information was kept private and is not visible on the public GitHub issue.
                 result = replitmail.send_email(email_subject, text=email_body)
                 
                 if result.get('success'):
-                    print(f"Email notification sent successfully", file=sys.stderr)
+                    print(f"Examiner email notification sent successfully", file=sys.stderr)
                 else:
-                    print(f"Email notification failed: {result.get('error')}", file=sys.stderr)
+                    print(f"Examiner email notification failed: {result.get('error')}", file=sys.stderr)
                     
             except Exception as e:
-                print(f"Email notification error: {str(e)}", file=sys.stderr)
+                print(f"Examiner email notification error: {str(e)}", file=sys.stderr)
+        
+        t = threading.Thread(target=_send, daemon=True)
+        t.start()
+    
+    def send_submitter_email(self, user_info, form_data, issue_number, compliance_result):
+        import threading
+        from datetime import datetime
+        
+        def _send():
+            try:
+                submitter_name = user_info.get('name', 'Submitter')
+                submitter_email = user_info.get('email', '')
+                if not submitter_email:
+                    print("No submitter email provided, skipping submitter notification", file=sys.stderr)
+                    return
+                
+                submission_title = form_data.get('submission_title', 'Untitled')
+                primary_scale = form_data.get('primary_scale', 'Not specified')
+                date_str = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
+                
+                overall = compliance_result.get('overall', 'UNAVAILABLE') if compliance_result else 'UNAVAILABLE'
+                criteria = compliance_result.get('criteria', []) if compliance_result else []
+                
+                if overall == "PASSED":
+                    screening_section = """AI STRUCTURAL PRE-CHECK: PASSED
+All 9 structural criteria were addressed."""
+                elif overall == "NEEDS REVIEW":
+                    flagged_items = ""
+                    for c in criteria:
+                        status = c.get('status', '')
+                        if status in ('FLAG', 'MISSING'):
+                            flagged_items += f"- Criterion {c.get('id', '?')} ({c.get('name', 'Unknown')}): {status} - {c.get('note', 'No details')}\n"
+                    if not flagged_items:
+                        flagged_items = "- Details unavailable\n"
+                    screening_section = f"""AI STRUCTURAL PRE-CHECK: NEEDS REVIEW
+The automated screening identified potential structural gaps:
+
+{flagged_items.rstrip()}"""
+                else:
+                    screening_section = """AI STRUCTURAL PRE-CHECK: UNAVAILABLE
+The automated screening could not be completed at this time. This does not affect your submission - it will proceed directly to examiner review."""
+                
+                email_body = f"""Dear {submitter_name},
+
+Your submission "{submission_title}" has been received by the TSM2 Institute for Cosmology.
+
+SUBMISSION REFERENCE
+GitHub Issue: #{issue_number}
+Submitted: {date_str}
+Primary Scale: {primary_scale}
+
+{screening_section}
+
+Please note:
+- This is an automated structural screening, not a scientific evaluation.
+- Your submission is now pending review by a qualified examiner.
+- Structural compliance does not constitute scientific validation or endorsement.
+- You will be contacted if any further information is required.
+
+Thank you for your submission.
+
+TSM2 Institute for Cosmology"""
+                
+                email_subject = f"TSM2 Institute — Submission Received [TSM2-SUB] {submission_title}"
+                
+                # TODO: Submitter email requires an external email service (e.g., SendGrid, Mailgun, or SMTP).
+                # Replit Mail only sends to the verified Replit account owner, not to arbitrary external addresses.
+                # The email content is logged here for audit purposes until an external service is integrated.
+                print(f"[SUBMITTER EMAIL] Would send to: {submitter_email}", file=sys.stderr)
+                print(f"[SUBMITTER EMAIL] Subject: {email_subject}", file=sys.stderr)
+                print(f"[SUBMITTER EMAIL] Screening result: {overall}", file=sys.stderr)
+                sys.stderr.flush()
+                    
+            except Exception as e:
+                print(f"Submitter email error: {str(e)}", file=sys.stderr)
         
         t = threading.Thread(target=_send, daemon=True)
         t.start()
@@ -483,8 +604,7 @@ This information was kept private and is not visible on the public GitHub issue.
         
         issue_data = {
             'title': title,
-            'body': body,
-            'labels': ['submission', 'needs-triage']
+            'body': body
         }
         
         url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/issues'
