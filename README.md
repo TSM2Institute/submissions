@@ -1,5 +1,7 @@
 # TSM2 Institute for Cosmology – Submission Portal
 
+**Version 1.0** — May 2026
+
 A web-based submission portal for the TSM2 Institute for Cosmology. Scientists and researchers submit structured theoretical claims through a streamlined form, with mandatory PDF documentation. Submissions are evaluated using a **Binary Structural Compliance Model** — each submission is either **Compliant** or **Non-Compliant**, with no partial acceptance. Structural compliance does not constitute scientific validation or endorsement.
 
 ---
@@ -8,21 +10,23 @@ A web-based submission portal for the TSM2 Institute for Cosmology. Scientists a
 
 ### Submission Process
 
-1. **Fill out the form** — A 5-step form collects the submission details
+1. **Fill out the form** — A 6-step form collects the submission details and criteria self-certification
 2. **Attach a PDF** — A mandatory PDF document serves as the authoritative record
-3. **AI Pre-Check** — Grok AI performs an automated compliance screening
-4. **GitHub Issue Created** — The submission is logged as a GitHub Issue with the PDF link
-5. **Email Notification** — The Institute Director receives a private email with the submitter's personal details
+3. **AI Pre-Check** — Grok AI performs an automated 9-criteria structural screening
+4. **GitHub Issue Created** — The submission is logged as a GitHub Issue with the PDF link and scorecard
+5. **Labels Applied** — GitHub labels are automatically applied based on the screening result
+6. **Email Notification** — The Institute Director receives a private email with the submitter's personal details
 
-### The 5-Step Form
+### The 6-Step Form
 
 | Step | Name | What's Collected |
 |------|------|------------------|
 | 1 | **Your Information** | Name, Email, Organization *(kept private)* |
 | 2 | **Submission Details** | Title, Core Claim, Primary Scale |
-| 3 | **Falsifiability Condition** | A testable condition that could disprove the claim |
-| 4 | **Document Upload** | Mandatory PDF attachment (up to 100MB) |
-| 5 | **Declaration** | Acknowledgment of binary structural compliance rules |
+| 3 | **Criteria Confirmation** | Self-certification that the PDF addresses criteria 2, 3, 4, 5, 6, and 9 |
+| 4 | **Falsifiability Condition** | A testable condition that could disprove the claim |
+| 5 | **Document Upload** | Mandatory PDF attachment (up to 100MB) |
+| 6 | **Declaration** | Acknowledgment of binary structural compliance rules |
 
 ### Privacy
 
@@ -32,23 +36,36 @@ A web-based submission portal for the TSM2 Institute for Cosmology. Scientists a
 
 ---
 
-## AI Compliance Pre-Check
+## AI Structural Pre-Check
 
-The system uses Grok AI (via the xAI API) to perform an automated compliance screening before the submission is logged. The AI evaluates 4 criteria:
+The system uses Grok AI (via the xAI API) to perform an automated structural screening before the submission is logged. The AI evaluates 9 criteria:
 
-| # | Criterion | Description |
-|---|-----------|-------------|
-| 1 | **Clear, single explicit claim** | The claim must not be compound or vague |
-| 2 | **Testable falsifiability condition** | Must specify how the claim could be proven wrong |
-| 3 | **No rhetorical or emotive language** | Scientific, objective tone required |
-| 4 | **Physical or cosmological scale stated** | e.g., quantum, stellar, galactic, cosmic |
+| # | Criterion | Assessment Method |
+|---|-----------|-------------------|
+| 1 | Explicit Claim | Assessed from Core Claim field |
+| 2 | Key Term Definitions | Submitter self-certification |
+| 3 | Declared Assumptions | Submitter self-certification |
+| 4 | Stated Mechanism | Submitter self-certification |
+| 5 | Energy Conservation | Submitter self-certification |
+| 6 | Empirical Anchor | Submitter self-certification |
+| 7 | Falsifiability | Assessed from Falsifiability field |
+| 8 | Scale Consistency | Assessed from Primary Scale + Core Claim |
+| 9 | Category Integrity | Assessed from Core Claim field |
 
-### Outcomes
+### Statuses
 
-- **PASSED** — All criteria met; submission proceeds normally
-- **NEEDS REVIEW** — One or more criteria flagged; submission still proceeds but is marked for closer review
+Each criterion receives one of:
+- **PASS** — Criterion clearly met (assessed criteria)
+- **DECLARED** — Submitter self-certified their PDF addresses this (self-certification criteria)
+- **FLAG** — Potential issue identified, examiner should check
+- **MISSING** — Not addressed or not certified
 
-The AI pre-check evaluates structure, not scientific truth. The AI result is included in the GitHub issue when available. This is a **pre-check only** — the final compliance decision is made by a human examiner.
+### Overall Outcomes
+
+- **PASSED** — All criteria are PASS or DECLARED, no FLAGS or MISSING
+- **NEEDS REVIEW** — One or more criteria are FLAG or MISSING
+
+The AI pre-check evaluates structure, not scientific truth. This is a screening tool only — the final compliance decision is made by a qualified examiner.
 
 > **Note:** The AI pre-check requires a valid `GROK_API_KEY`. If the key is not configured, submissions will still proceed but without AI compliance data in the issue.
 
@@ -56,48 +73,51 @@ The AI pre-check evaluates structure, not scientific truth. The AI result is inc
 
 ## What Gets Stored in the GitHub Issue
 
-Each submission creates a GitHub Issue in the `TSM2Institute/submissions` repository:
+Each submission creates a GitHub Issue in the `TSM2Institute/submissions` repository.
 
 **Issue Title:** `[TSM2-SUB] {submission title}`
 
 **Issue Body Contains:**
-- Submission title
-- Primary scale
-- Core claim text
+- Submission title, primary scale, core claim
 - Falsifiability condition
-- PDF download link (clickable)
-- File size
+- Criteria self-certification (6 checkboxes confirmed by submitter)
+- PDF download link and file size
 - Declaration confirmations
-- AI Compliance Pre-Check result (PASSED / NEEDS REVIEW + explanation)
+- AI Structural Pre-Check: 9-criteria scorecard with per-criterion status and notes
+
+**Labels Applied Automatically:**
+- `Pending Review` (always)
+- `Screening: Passed` or `Screening: Needs Review` or `Screening: Unavailable`
 
 **Not Included (Private):**
-- Submitter's name
-- Submitter's email
-- Submitter's organization
+- Submitter's name, email, organization
 
 ---
 
 ## Examiner Workflow
 
 1. Examiner receives **GitHub notification** when a new issue is created
-2. Examiner receives **private email** (via Replit Mail) with submitter details
-3. Examiner reviews the GitHub issue content and downloads the PDF
-4. Examiner uses the AI compliance result as initial guidance
-5. Examiner makes the **final binary decision**: Compliant or Non-Compliant
-6. Further governance steps (registration, archiving) follow the [Governance Protocol](public/files/governance.md)
-
-> **Note:** The Examiner decision applies only to structural compliance under Institute criteria and does not certify scientific correctness.
+2. Examiner receives **private email** with submitter details
+3. Issue is labelled `Pending Review` plus the AI screening result
+4. Examiner reviews the 9-criteria scorecard for initial guidance
+5. Examiner reviews the submission content and downloads the PDF
+6. Examiner applies **Criterion 10** ("Why Is This True?") as the primary integrity test
+7. Examiner makes the **final binary decision**: Compliant or Non-Compliant
+8. The Examiner decision applies only to structural compliance under Institute criteria and does not certify scientific correctness
+9. Further governance steps (registration, archiving) follow the [Governance Protocol](public/files/governance.md)
 
 ---
 
 ## Project Structure
 
 ```
-├── index.html          # Frontend (single-page app with 5-step form)
+├── index.html          # Frontend (single-page app with 6-step form)
+├── start.sh            # Auto-restart wrapper for server.py
 ├── server.py           # Backend (Python HTTP server + API)
 ├── replitmail.py       # Email notification utility (Replit Mail integration)
 ├── replit.md           # Replit-specific project documentation
 ├── README.md           # This file
+├── .gitignore          # Excludes uploads, cache, logs from Git
 ├── public/
 │   └── files/
 │       └── governance.md   # Governance protocol documentation
@@ -154,7 +174,9 @@ Accepts `multipart/form-data` with the following fields:
   "number": 42,
   "complianceCheck": {
     "compliant": true,
-    "message": "Submission meets all structural requirements."
+    "overall": "PASSED",
+    "message": "The submission meets all structural criteria.",
+    "criteria": [...]
   }
 }
 ```
@@ -184,6 +206,8 @@ Uploaded PDFs are validated server-side:
 
 The full post-submission governance workflow is documented in [`public/files/governance.md`](public/files/governance.md). It covers:
 
+- The 9 Structural Compliance Criteria (explicit list)
+- Criterion 10 — Examiner Assessment Only
 - AI Compliance Confirmation
 - Assignment to Qualified Registered Examiner
 - Examiner Confirmation or Return
@@ -196,7 +220,7 @@ The full post-submission governance workflow is documented in [`public/files/gov
 
 The application is deployed on Replit using autoscale deployment:
 
-- **Run command:** `python server.py`
+- **Run command:** `bash start.sh`
 - **Port:** 5000 (internal) mapped to 80 (external)
 - **Target:** Autoscale
 

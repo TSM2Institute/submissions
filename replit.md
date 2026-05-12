@@ -1,5 +1,7 @@
 # TSM2 Institute Submission Portal
 
+**Version 1.0** — May 2026
+
 ## Overview
 
 This is a submission portal for the TSM2 Institute for Cosmology. The application allows users to submit scientific papers or proposals through a simplified web interface using a **Binary Structural Compliance Model**. Submissions are automatically created as GitHub Issues with attached PDF documents for review.
@@ -9,9 +11,10 @@ This is a submission portal for the TSM2 Institute for Cosmology. The applicatio
 - Structural compliance does not constitute scientific validation or endorsement
 - Mandatory PDF upload as the authoritative record
 - User personal details kept private (not posted to GitHub)
-- AI compliance pre-check using Grok API (4 criteria)
+- AI compliance pre-check using Grok API (9-criteria structural scorecard)
 - 6-step form with criteria self-certification checkboxes
 - Criteria declaration checkboxes (6 structural criteria confirmed by submitter)
+- Auto-labelling of GitHub issues (Pending Review + screening result)
 - Email notification to Institute Director with private submitter details
 
 **Status:** Fully functional and published
@@ -32,7 +35,7 @@ Preferred communication style: Simple, everyday language.
 ├── .gitignore          # Excludes uploads, cache, logs from Git
 ├── public/
 │   └── files/
-│       └── governance.md   # Governance protocol (Steps 10-14)
+│       └── governance.md   # Governance protocol (Steps 10-14 + 9 criteria list)
 └── uploads/            # PDF storage directory (gitignored)
 ```
 
@@ -49,7 +52,7 @@ Preferred communication style: Simple, everyday language.
 - **API Endpoint**: `/api/submit` handles POST multipart/form-data submissions
 - **PDF Storage**: Local `/uploads/` folder with public URLs
 - **PDF Validation**: Extension check, magic bytes verification, 100MB size limit, filename sanitization
-- **AI Integration**: Grok API (`grok-3-mini`) for structural compliance pre-checking (evaluates structure, not scientific truth)
+- **AI Integration**: Grok API (`grok-3-mini`) for 9-criteria structural compliance pre-checking (evaluates structure, not scientific truth)
 - **GitHub Integration**: Creates Issues via GitHub API in `TSM2Institute/submissions`
 - **Email Integration**: Replit Mail sends submitter details privately to Institute Director
 
@@ -72,6 +75,9 @@ Preferred communication style: Simple, everyday language.
 8. Scale Consistency — physical scale stated (assessed from form)
 9. Category Integrity — physical causation, not metaphor (assessed from form)
 
+Per-criterion statuses: PASS / DECLARED / FLAG / MISSING
+Overall outcomes: PASSED / NEEDS REVIEW / UNAVAILABLE
+
 ### Data Flow
 1. User fills out 6-step form with criteria confirmation and PDF attachment
 2. Personal info collected but kept private
@@ -79,11 +85,11 @@ Preferred communication style: Simple, everyday language.
 4. Server validates PDF (extension, header, size, filename sanitization)
 5. Server saves PDF to `/uploads/` folder with unique prefix
 6. Grok AI performs 9-criteria scorecard compliance check on form fields
-7. Server creates GitHub Issue with submission details + PDF link
+7. Server creates GitHub Issue with submission details + PDF link + scorecard
 8. AI scorecard (PASSED/NEEDS REVIEW/UNAVAILABLE) included in issue
 9. GitHub labels auto-applied (Pending Review + screening result)
 10. Email notification sent to Institute Director with private submitter details
-11. Email notification sent to submitter with receipt and AI screening results
+11. Submitter email content built and logged server-side (external email delivery pending — Replit Mail is limited to verified internal address; external SMTP service TBD)
 
 ### Static File Serving
 - The Python server doubles as a static file server for the HTML frontend
@@ -101,6 +107,7 @@ Preferred communication style: Simple, everyday language.
   - Endpoint: `https://api.x.ai/v1/chat/completions`
   - Model: `grok-3-mini`
   - Requires `GROK_API_KEY` environment variable
+  - Note: Requests must include a `User-Agent` header (Cloudflare blocks requests without one)
 - **Replit Mail**: Email notifications for submitter details
   - Sends to Institute Director's verified Replit email
   - Uses internal Replit authentication (no API key needed)
@@ -124,23 +131,51 @@ Preferred communication style: Simple, everyday language.
 - **Run command**: `bash start.sh`
 - **Port**: 5000 (internal) mapped to 80 (external)
 
-## Recent Changes (January 2026)
+## Change History
 
-### Form Simplification
+### Portal Update v1.0 (May 2026)
+
+**Phase 1: Language & Legal Protection**
+- "Binary Compliance" updated to "Binary Structural Compliance" throughout
+- Added disclaimers: structural compliance ≠ scientific validation
+- Added criteria reference accordion (10 criteria, #10 marked examiner-only)
+- Added "Return to TSM2 Institute" navigation link
+
+**Phase 2: Form Expansion**
+- Form expanded from 5 steps to 6 steps
+- New Step 3: Criteria Confirmation (6 self-certification checkboxes)
+- Criteria 2, 3, 4, 5, 6, 9 now captured via submitter declaration
+- GitHub issue includes criteria self-certification section
+
+**Phase 3: AI Prompt Upgrade**
+- Grok prompt upgraded from 4 checks to 9-criteria structural scorecard
+- Response format: per-criterion status (PASS/DECLARED/FLAG/MISSING) with notes
+- GitHub issue includes full scorecard table
+- Fallback handling for API errors and legacy response formats
+
+**Phase 4: GitHub Labels & Notifications**
+- Auto-labels applied on submission: Pending Review + screening result
+- Submitter email content built (PASSED/NEEDS REVIEW/UNAVAILABLE templates)
+- External email delivery pending (Replit Mail limited to internal; external service TBD)
+- Improved Grok API error logging with `[GROK ERROR]` prefix and response body
+- Fixed Grok 403 errors by adding `User-Agent` header (Cloudflare requirement)
+
+**Phase 5: Documentation & Version Stamp**
+- governance.md updated with explicit 9-criteria list + Criterion 10 (examiner-only)
+- README.md and replit.md fully updated to reflect current system
+- Version stamped as v1.0
+
+### Initial Build (January 2026)
 - Reduced from 11 steps to 5 steps
 - Binary structural compliance model (Compliant / Non-Compliant)
 - Mandatory PDF upload as authoritative record
 - User personal details kept private
-- Added Grok AI compliance pre-check (4 criteria)
-
-### Technical Updates
+- Added Grok AI compliance pre-check
 - Added multipart form data handling for PDF uploads
 - Added `/uploads/` folder for PDF storage
-- Integrated Grok API for compliance checking
 - Added cache-control headers to prevent stale content
 - Added PDF validation (file type, size limit, header check)
 - Added filename sanitization for security
 - Added Replit Mail email notifications for submitter details
-- Cleaned up deployment config (removed conflicting port 80 workflow)
-- Added .gitignore for uploads, cache, and temp files
+- Added `start.sh` auto-restart wrapper
 - Created comprehensive README.md for Git repository

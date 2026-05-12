@@ -5,6 +5,34 @@
 
 ---
 
+## The 9 Structural Compliance Criteria
+
+All submissions are evaluated against these 9 mandatory structural criteria. Every criterion must be satisfied for a submission to be deemed structurally compliant. This is an AND-gate model — failure on any single criterion results in non-compliance.
+
+| # | Criterion | What It Requires |
+|---|-----------|-----------------|
+| 1 | **Explicit Claim** | A single, clear, non-compound claim. No ambiguity, no implication, no inference. |
+| 2 | **Key Term Definitions** | All non-standard or framework-specific terminology explicitly defined and used consistently. |
+| 3 | **Declared Assumptions** | All foundational assumptions stated explicitly. Hidden premises invalidate compliance. |
+| 4 | **Stated Mechanism** | A physical mechanism connecting cause to effect, described as a step-by-step causal sequence. Assertion without mechanism is non-compliant. |
+| 5 | **Energy / Conservation Consistency** | Demonstration that the claim preserves conservation laws, or clear statement of which law is modified and why. No undefined energy sources or sinks. |
+| 6 | **Observational / Empirical Anchor** | Identification of the dataset, measurable phenomenon, or observational reference that grounds the claim. |
+| 7 | **Falsifiability Condition** | At least one clear, testable condition under which the claim would be proven false. If it cannot fail, it cannot pass. |
+| 8 | **Scale Consistency** | The mechanism operates consistently at the declared physical scale. No cross-scale substitution without explicit justification. |
+| 9 | **Category Integrity** | The claim does not replace physical causation with metaphor, geometry, or undefined abstraction. Physical claims require physical mechanisms. |
+
+### Criterion 10 — Examiner Assessment Only
+
+In addition to the 9 structural criteria above, a tenth criterion is assessed exclusively by the qualified examiner during human review:
+
+**10. "Why Is This Claim True?"**
+
+The examiner evaluates whether the submission answers in structured causal form: **"Because X interacts with Y, therefore Z"** — where X is the causal driver, Y is the interacting condition, and Z is the necessary outcome.
+
+This criterion is not part of the automated screening or the submitter's self-certification. It is the examiner's primary integrity test.
+
+---
+
 ## Final Steps: Post-Compliance Pathway
 *Mandatory — no exceptions*
 
@@ -152,11 +180,15 @@ The Institute now has:
 
 ## Official Pipeline (Active)
 
-### Phase I: Submission & Compliance
-1. Submission received (text / images / links / extracts)
+### Phase I: Submission & Binary Structural Compliance
+1. Submission received via portal (PDF + structured form data)
 2. Assigned Compliance Case ID
-3. Evaluated against 9 Mandatory Criteria
+3. Evaluated against 9 Mandatory Structural Criteria
 4. Output: 9-Criteria Scorecard, Pass/Fail determination, Fix list (if applicable)
+
+The automated AI pre-check evaluates structural completeness, not scientific truth. It produces a 9-criteria scorecard that guides — but does not replace — the qualified examiner's review.
+
+Structural compliance does not constitute scientific validation or endorsement of the submission's content.
 
 ### Phase II: Compliance Clearance
 - If (and only if) all 9 criteria pass:
@@ -169,7 +201,8 @@ The Institute now has:
    - Correct application of criteria
    - No hidden violations
    - No category leakage
-3. Examiner outcomes: Confirm (proceed) or Return (no registration)
+3. Examiner applies Criterion 10 ("Why Is This Claim True?") as the primary integrity test
+4. Examiner outcomes: Confirm (proceed) or Return (no registration)
 
 ### Phase IV: Registration & Archive
 - Upon examiner confirmation:

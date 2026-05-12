@@ -1,0 +1,302 @@
+# PHASE 5 — Documentation Alignment & v1.0 Version Stamp
+
+## Context for Builder
+
+This is Phase 5 (final phase of the initial build) of the TSM2 Submission Portal update. Phases 1-4 are complete and verified.
+
+Phase 5 is documentation only. No code changes, no form changes, no server changes. We are:
+1. Updating governance.md to explicitly list the 9 criteria
+2. Updating README.md and replit.md to reflect the current state of the system
+3. Stamping everything as v1.0
+
+---
+
+## 1. Update governance.md
+
+The file is at `public/files/governance.md`.
+
+### 1A. Add the 9 Criteria List
+
+The current governance.md references "9 Mandatory Criteria" and "9-Criteria Scorecard" multiple times but never lists them. Fix this.
+
+Find the section that mentions the criteria (under "Phase I: Submission & Compliance" or similar) and add the following explicit list. If there's no natural place, add a new section titled "The 9 Structural Compliance Criteria" immediately before the "Final Steps: Post-Compliance Pathway" section.
+
+Add this content:
+
+```markdown
+## The 9 Structural Compliance Criteria
+
+All submissions are evaluated against these 9 mandatory structural criteria. Every criterion must be satisfied for a submission to be deemed structurally compliant. This is an AND-gate model — failure on any single criterion results in non-compliance.
+
+| # | Criterion | What It Requires |
+|---|-----------|-----------------|
+| 1 | **Explicit Claim** | A single, clear, non-compound claim. No ambiguity, no implication, no inference. |
+| 2 | **Key Term Definitions** | All non-standard or framework-specific terminology explicitly defined and used consistently. |
+| 3 | **Declared Assumptions** | All foundational assumptions stated explicitly. Hidden premises invalidate compliance. |
+| 4 | **Stated Mechanism** | A physical mechanism connecting cause to effect, described as a step-by-step causal sequence. Assertion without mechanism is non-compliant. |
+| 5 | **Energy / Conservation Consistency** | Demonstration that the claim preserves conservation laws, or clear statement of which law is modified and why. No undefined energy sources or sinks. |
+| 6 | **Observational / Empirical Anchor** | Identification of the dataset, measurable phenomenon, or observational reference that grounds the claim. |
+| 7 | **Falsifiability Condition** | At least one clear, testable condition under which the claim would be proven false. If it cannot fail, it cannot pass. |
+| 8 | **Scale Consistency** | The mechanism operates consistently at the declared physical scale. No cross-scale substitution without explicit justification. |
+| 9 | **Category Integrity** | The claim does not replace physical causation with metaphor, geometry, or undefined abstraction. Physical claims require physical mechanisms. |
+
+### Criterion 10 — Examiner Assessment Only
+
+In addition to the 9 structural criteria above, a tenth criterion is assessed exclusively by the qualified examiner during human review:
+
+**10. "Why Is This Claim True?"**
+
+The examiner evaluates whether the submission answers in structured causal form: **"Because X interacts with Y, therefore Z"** — where X is the causal driver, Y is the interacting condition, and Z is the necessary outcome.
+
+This criterion is not part of the automated screening or the submitter's self-certification. It is the examiner's primary integrity test.
+```
+
+### 1B. Terminology Alignment
+
+Find and replace throughout governance.md:
+- "Binary Compliance" → "Binary Structural Compliance" (if any instances remain)
+- Ensure all references to compliance include the clarification that it does not constitute scientific validation
+
+### 1C. Update the criteria count references
+
+The current governance.md says "9-criteria" in several places. Verify these are all correct and consistent. If any say "10 criteria" or a different number for the automated gate, correct to 9.
+
+### 1D. Add AI Pre-Check Clarification
+
+In the "Phase I: Submission & Compliance" section (or equivalent), add:
+
+```markdown
+The automated AI pre-check evaluates structural completeness, not scientific truth. It produces a 9-criteria scorecard that guides — but does not replace — the qualified examiner's review.
+```
+
+---
+
+## 2. Update README.md
+
+The README.md needs to reflect the current system after Phases 1-4. Here are the specific sections to update:
+
+### 2A. Form Structure
+
+Replace the current 5-step form table with:
+
+```markdown
+### The 6-Step Form
+
+| Step | Name | What's Collected |
+|------|------|------------------|
+| 1 | **Your Information** | Name, Email, Organization, Phone, Website *(kept private)* |
+| 2 | **Submission Details** | Title, Core Claim, Primary Scale |
+| 3 | **Criteria Confirmation** | Self-certification that the PDF addresses criteria 2, 3, 4, 5, 6, and 9 |
+| 4 | **Falsifiability Condition** | A testable condition that could disprove the claim |
+| 5 | **Document Upload** | Mandatory PDF attachment (up to 100MB) |
+| 6 | **Declaration** | Acknowledgment of binary structural compliance rules |
+```
+
+### 2B. AI Compliance Pre-Check
+
+Replace the current 4-criteria AI check description with:
+
+```markdown
+## AI Structural Pre-Check
+
+The system uses Grok AI (via the xAI API) to perform an automated structural screening before the submission is logged. The AI evaluates 9 criteria:
+
+| # | Criterion | Assessment Method |
+|---|-----------|-------------------|
+| 1 | Explicit Claim | Assessed from Core Claim field |
+| 2 | Key Term Definitions | Submitter self-certification |
+| 3 | Declared Assumptions | Submitter self-certification |
+| 4 | Stated Mechanism | Submitter self-certification |
+| 5 | Energy Conservation | Submitter self-certification |
+| 6 | Empirical Anchor | Submitter self-certification |
+| 7 | Falsifiability | Assessed from Falsifiability field |
+| 8 | Scale Consistency | Assessed from Primary Scale + Core Claim |
+| 9 | Category Integrity | Assessed from Core Claim field |
+
+### Statuses
+
+Each criterion receives one of:
+- **PASS** — Criterion clearly met (assessed criteria)
+- **DECLARED** — Submitter self-certified their PDF addresses this (self-certification criteria)
+- **FLAG** — Potential issue identified, examiner should check
+- **MISSING** — Not addressed or not certified
+
+### Overall Outcomes
+
+- **PASSED** — All criteria are PASS or DECLARED, no FLAGS or MISSING
+- **NEEDS REVIEW** — One or more criteria are FLAG or MISSING
+
+The AI pre-check evaluates structure, not scientific truth. This is a screening tool only — the final compliance decision is made by a qualified examiner.
+```
+
+### 2C. GitHub Issue Content
+
+Update the "What Gets Stored in the GitHub Issue" section to include:
+- Criteria Self-Certification section (added in Phase 2)
+- 9-Criteria Scorecard table (added in Phase 3)
+- GitHub labels (added in Phase 4)
+
+```markdown
+## What Gets Stored in the GitHub Issue
+
+Each submission creates a GitHub Issue in the `TSM2Institute/submissions` repository.
+
+**Issue Title:** `[TSM2-SUB] {submission title}`
+
+**Issue Body Contains:**
+- Submission title, primary scale, core claim
+- Falsifiability condition
+- Criteria self-certification (6 checkboxes confirmed by submitter)
+- PDF download link and file size
+- Declaration confirmations
+- AI Structural Pre-Check: 9-criteria scorecard with per-criterion status and notes
+
+**Labels Applied Automatically:**
+- `Pending Review` (always)
+- `Screening: Passed` or `Screening: Needs Review` or `Screening: Unavailable`
+
+**Not Included (Private):**
+- Submitter's name, email, organization, phone, website
+```
+
+### 2D. Version Number
+
+Add at the top of README.md, after the title:
+
+```markdown
+**Version 1.0** — May 2026
+```
+
+### 2E. Examiner Workflow
+
+Update the Examiner Workflow section to include:
+
+```markdown
+## Examiner Workflow
+
+1. Examiner receives **GitHub notification** when a new issue is created
+2. Examiner receives **private email** with submitter details
+3. Issue is labelled `Pending Review` plus the AI screening result
+4. Examiner reviews the 9-criteria scorecard for initial guidance
+5. Examiner reviews the submission content and downloads the PDF
+6. Examiner applies **Criterion 10** ("Why Is This True?") as the primary integrity test
+7. Examiner makes the **final binary decision**: Compliant or Non-Compliant
+8. The Examiner decision applies only to structural compliance under Institute criteria and does not certify scientific correctness
+9. Further governance steps (registration, archiving) follow the [Governance Protocol](public/files/governance.md)
+```
+
+---
+
+## 3. Update replit.md
+
+Apply the same updates as README.md where applicable:
+
+### 3A. Form Structure
+Update from 5 steps to 6 steps (same table as README.md section 2A)
+
+### 3B. AI Compliance Criteria
+Update from 4 checks to 9-criteria scorecard description
+
+### 3C. Data Flow
+Update the data flow section to include:
+- Step 3 criteria confirmation checkboxes
+- 9-criteria scorecard generation
+- Auto-labelling of GitHub issues
+- Submitter email logging (note: currently logged server-side, external email service pending)
+
+### 3D. Recent Changes
+Add a new section at the bottom of "Recent Changes":
+
+```markdown
+### Portal Update v1.0 (May 2026)
+
+**Phase 1: Language & Legal Protection**
+- "Binary Compliance" updated to "Binary Structural Compliance" throughout
+- Added disclaimers: structural compliance ≠ scientific validation
+- Added criteria reference accordion (10 criteria, #10 marked examiner-only)
+- Added "Return to TSM2 Institute" navigation link
+
+**Phase 2: Form Expansion**
+- Form expanded from 5 steps to 6 steps
+- New Step 3: Criteria Confirmation (6 self-certification checkboxes)
+- Criteria 2, 3, 4, 5, 6, 9 now captured via submitter declaration
+- GitHub issue includes criteria self-certification section
+
+**Phase 3: AI Prompt Upgrade**
+- Grok prompt upgraded from 4 checks to 9-criteria structural scorecard
+- Response format: per-criterion status (PASS/DECLARED/FLAG/MISSING) with notes
+- GitHub issue includes full scorecard table
+- Fallback handling for API errors and legacy response formats
+
+**Phase 4: GitHub Labels & Notifications**
+- Auto-labels applied on submission: Pending Review + screening result
+- Submitter email content built (PASSED/NEEDS REVIEW/UNAVAILABLE templates)
+- External email delivery pending (Replit Mail limited to internal; external service TBD)
+- Improved Grok API error logging
+
+**Phase 5: Documentation & Version Stamp**
+- governance.md updated with explicit 9-criteria list + Criterion 10 (examiner-only)
+- README.md and replit.md fully updated to reflect current system
+- Version stamped as v1.0
+```
+
+### 3E. Version Number
+Add to the top of replit.md:
+
+```markdown
+**Version 1.0** — May 2026
+```
+
+---
+
+## 4. Git Commit
+
+After all documentation changes are made, commit with:
+
+```
+git add -A
+git commit -m "v1.0 — Documentation alignment, governance criteria listed, version stamp
+
+- governance.md: 9 criteria explicitly listed, Criterion 10 noted as examiner-only
+- README.md: Updated to reflect 6-step form, 9-criteria scorecard, auto-labels
+- replit.md: Updated with full change history and current architecture
+- Version stamped as v1.0 (May 2026)"
+
+git push origin main
+```
+
+---
+
+## What NOT To Change in Phase 5
+
+- Do NOT modify index.html
+- Do NOT modify server.py
+- Do NOT modify replitmail.py
+- Do NOT change any functionality
+- This phase is documentation ONLY
+
+---
+
+## Verification Checklist (for Graham)
+
+After applying these changes, confirm:
+
+- [ ] governance.md contains the explicit 9-criteria table
+- [ ] governance.md contains the Criterion 10 examiner-only note
+- [ ] governance.md terminology is consistent ("Binary Structural Compliance")
+- [ ] README.md reflects 6-step form
+- [ ] README.md describes 9-criteria AI scorecard with statuses
+- [ ] README.md includes updated GitHub issue content description
+- [ ] README.md includes updated examiner workflow
+- [ ] README.md has version number (v1.0 — May 2026)
+- [ ] replit.md mirrors README.md updates where applicable
+- [ ] replit.md has full change history (Phases 1-5)
+- [ ] replit.md has version number
+- [ ] Git commit pushed to main with descriptive message
+- [ ] Verify: no code files were changed (only .md files)
+- [ ] Portal still works (quick test submission to confirm nothing broke)
+
+---
+
+*Phase 5 of 5 — TSM2 Submission Portal Update (Initial Build)*
+*Planner: Claude (Anthropic) — Builder: Replit Claude*
