@@ -11,7 +11,57 @@ import sys
 import uuid
 import cgi
 import io
+import time
 import replitmail
+
+try:
+    import pdfplumber
+    PDFPLUMBER_AVAILABLE = True
+except ImportError:
+    PDFPLUMBER_AVAILABLE = False
+    print("[STARTUP] pdfplumber not installed; PDF text extraction will be disabled.", file=sys.stderr)
+
+
+STATUS_DISPLAY = {
+    "PASS": "✅ Pass",
+    "CONDITIONAL_PASS": "⚠️ Conditional Pass",
+    "CONDITIONAL_FAIL": "⚠️ Conditional Fail",
+    "FAIL": "❌ Fail",
+}
+
+
+def extract_pdf_text(pdf_path, max_chars=60000):
+    """Extract text from PDF using pdfplumber.
+
+    Returns (text, truncated, page_count) tuple.
+    - text: extracted text content (str) or None on error
+    - truncated: bool, True if cut at the character limit
+    - page_count: total pages in the PDF (0 on error)
+    """
+    if not PDFPLUMBER_AVAILABLE:
+        print("[PDF EXTRACTION] pdfplumber unavailable; skipping extraction.", file=sys.stderr)
+        return None, False, 0
+    try:
+        text_parts = []
+        total_chars = 0
+        truncated = False
+        with pdfplumber.open(pdf_path) as pdf:
+            page_count = len(pdf.pages)
+            for page in pdf.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    if total_chars + len(page_text) > max_chars:
+                        remaining = max_chars - total_chars
+                        text_parts.append(page_text[:remaining])
+                        text_parts.append("\n\n[--- PDF TEXT TRUNCATED AT CHARACTER LIMIT ---]")
+                        truncated = True
+                        break
+                    text_parts.append(page_text)
+                    total_chars += len(page_text)
+        return "\n\n".join(text_parts), truncated, page_count
+    except Exception as e:
+        print(f"[PDF EXTRACTION ERROR] {e}", file=sys.stderr)
+        return None, False, 0
 
 
 class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
@@ -166,57 +216,84 @@ class RequestHandler(SimpleHTTPRequestHandler):
         print(f"PDF saved: {pdf_path} ({len(pdf_content)} bytes)", file=sys.stderr)
         print(f"Processing submission: {title}", file=sys.stderr)
         
+        # Extract PDF text for AI assessment
+        pdf_text, pdf_truncated, pdf_page_count = extract_pdf_text(pdf_path)
+        pdf_extraction_failed = False
+        if pdf_text is None:
+            pdf_extraction_failed = True
+        elif len(pdf_text.strip()) == 0:
+            pdf_text = None
+            pdf_extraction_failed = True
+            print(f"[PDF EXTRACTION] PDF appears image-based; no extractable text.", file=sys.stderr)
+        else:
+            print(f"[PDF EXTRACTION] {pdf_page_count} pages, {len(pdf_text)} chars, truncated={pdf_truncated}", file=sys.stderr)
+
         compliance_result = None
         if form_data:
-            compliance_result = self.check_compliance_with_grok(form_data)
-        
+            compliance_result = self.check_compliance_with_grok(
+                form_data,
+                pdf_text=pdf_text,
+                pdf_extraction_failed=pdf_extraction_failed,
+            )
+
         if pdf_url:
             body_text = body_text.replace(
                 f'- **PDF Attached:** {pdf_filename}',
                 f'- **PDF Attached:** [{pdf_filename}]({pdf_url})'
             )
-            
+
             if compliance_result:
                 criteria_list = compliance_result.get('criteria', [])
-                overall = compliance_result.get('overall', 'NEEDS REVIEW')
+                compliance_verdict = compliance_result.get('compliance_verdict', 'UNAVAILABLE')
+                worth_checking_verdict = compliance_result.get('worth_checking_verdict', 'UNAVAILABLE')
                 summary = compliance_result.get('message', 'No summary provided.')
                 is_error = compliance_result.get('error', False)
-                
-                if is_error or overall == "UNAVAILABLE":
+
+                extraction_note = ""
+                if pdf_extraction_failed:
+                    extraction_note = "\n> ⚠️ Note: PDF text extraction failed. The AI assessment is based on form-field metadata only, with reduced confidence.\n"
+                elif pdf_truncated:
+                    extraction_note = f"\n> ⚠️ Note: The PDF text was truncated at approximately 60,000 characters ({pdf_page_count} pages total). The AI assessment is based on the content up to the truncation point.\n"
+
+                if is_error or compliance_verdict == "UNAVAILABLE":
                     compliance_section = f"""
 
 ---
 
-### AI Structural Pre-Check (9-Criteria Scorecard)
+### AI Structural Pre-Check (9-Criteria Scorecard, PDF-grounded)
 
 > **This is an automated structural screening, not a scientific evaluation.**
 
-**Overall: UNAVAILABLE**
+**Compliance Verdict:** UNAVAILABLE
+**Worth Checking Verdict:** UNAVAILABLE
 
-AI pre-check could not be completed. This does not affect the submission — it will proceed to manual review.
+The AI pre-check could not be completed. This does not affect the submission — it proceeds to manual review.
 
 **Reason:** {summary}
 """
                 elif criteria_list:
                     scorecard_rows = ""
                     for c in criteria_list:
-                        scorecard_rows += f"| {c.get('id', '')} | {c.get('name', '')} | {c.get('status', '')} | {c.get('note', '')} |\n"
-                    
+                        rendered_status = STATUS_DISPLAY.get(c.get('status', ''), c.get('status', ''))
+                        scorecard_rows += f"| {c.get('id', '')} | {c.get('name', '')} | {rendered_status} | {c.get('note', '')} |\n"
+
                     compliance_section = f"""
 
 ---
 
-### AI Structural Pre-Check (9-Criteria Scorecard)
+### AI Structural Pre-Check (9-Criteria Scorecard, PDF-grounded)
 
 > **This is an automated structural screening, not a scientific evaluation.**
 > The AI pre-check evaluates structure, not scientific truth.
+> A submission that contradicts TSM2 can still pass; a submission that agrees with TSM2 can still fail.
 > Final compliance determination is made by a qualified examiner.
 
-**Overall: {overall}**
+**Compliance Verdict:** {compliance_verdict}
+**Worth Checking Verdict:** {worth_checking_verdict}
 
 | # | Criterion | Status | Note |
 |---|-----------|--------|------|
-{scorecard_rows}
+{scorecard_rows}{extraction_note}
 **Summary:** {summary}
 """
                 else:
@@ -224,12 +301,13 @@ AI pre-check could not be completed. This does not affect the submission — it 
 
 ---
 
-### AI Structural Pre-Check (9-Criteria Scorecard)
+### AI Structural Pre-Check (9-Criteria Scorecard, PDF-grounded)
 
 > **This is an automated structural screening, not a scientific evaluation.**
 
-**Overall: {overall}**
-
+**Compliance Verdict:** {compliance_verdict}
+**Worth Checking Verdict:** {worth_checking_verdict}
+{extraction_note}
 **Summary:** {summary}
 """
                 body_text += compliance_section
@@ -288,99 +366,102 @@ AI pre-check could not be completed. This does not affect the submission — it 
         else:
             self.send_json_response(result.get('code', 500), {'error': result.get('error')})
     
-    def check_compliance_with_grok(self, form_data):
+    def check_compliance_with_grok(self, form_data, pdf_text=None, pdf_extraction_failed=False):
         grok_api_key = os.environ.get('GROK_API_KEY')
         if not grok_api_key:
             print("GROK_API_KEY not configured, skipping compliance check", file=sys.stderr)
             return {
                 "compliant": False,
                 "message": "AI pre-check not configured.",
-                "overall": "UNAVAILABLE",
+                "compliance_verdict": "UNAVAILABLE",
+                "worth_checking_verdict": "UNAVAILABLE",
                 "criteria": [],
-                "error": True
+                "error": True,
             }
-        
+
         try:
             submission_title = form_data.get('submission_title', 'Not provided')
             core_claim = form_data.get('core_claim', 'Not provided')
             primary_scale = form_data.get('primary_scale', 'Not provided')
             falsifiability = form_data.get('falsifiability', 'Not provided')
-            criteria_definitions = form_data.get('criteria_definitions', False)
-            criteria_assumptions = form_data.get('criteria_assumptions', False)
-            criteria_mechanism = form_data.get('criteria_mechanism', False)
-            criteria_energy = form_data.get('criteria_energy', False)
-            criteria_empirical = form_data.get('criteria_empirical', False)
-            criteria_category = form_data.get('criteria_category', False)
 
-            prompt = f"""You are screening a submission to the TSM2 Institute for Cosmology against 9 structural criteria. Evaluate structure and completeness only — do NOT judge scientific merit or correctness.
+            if pdf_extraction_failed or not pdf_text:
+                pdf_section = "[PDF text could not be extracted. Assess based on the metadata fields above only. Note in your summary that the assessment is limited to form fields due to PDF extraction failure.]"
+            else:
+                pdf_section = pdf_text
 
-SUBMISSION DATA:
+            prompt = f"""You are screening a submission to the TSM2 Institute for Cosmology against 9 structural criteria. Evaluate structure, methodology, and epistemic discipline only — do NOT judge scientific merit, correctness, or alignment with any framework.
+
+SUBMISSION METADATA (provided for orientation only — assess from PDF text below, not from these fields):
 - Title: {submission_title}
-- Core Claim: {core_claim}
-- Primary Scale: {primary_scale}
-- Falsifiability Condition: {falsifiability}
+- Submitter's stated core claim: {core_claim}
+- Submitter's stated primary scale: {primary_scale}
+- Submitter's stated falsifiability condition: {falsifiability}
 
-SUBMITTER SELF-CERTIFICATION:
-The submitter has confirmed their PDF addresses the following (these are declarations, not content you can verify — note them as "Declared by submitter"):
-- Key terms defined: {criteria_definitions}
-- Assumptions declared: {criteria_assumptions}
-- Mechanism described: {criteria_mechanism}
-- Energy conservation addressed: {criteria_energy}
-- Empirical anchor identified: {criteria_empirical}
-- Category integrity maintained: {criteria_category}
+PDF TEXT:
+---
+{pdf_section}
+---
 
-EVALUATE AGAINST THESE 9 CRITERIA:
+EVALUATE AGAINST THESE 9 CRITERIA, using the four-state scale (PASS, CONDITIONAL_PASS, CONDITIONAL_FAIL, FAIL):
 
-1. EXPLICIT CLAIM — Is the core claim singular, clear, and non-compound? (Assess from the Core Claim field)
-2. KEY TERM DEFINITIONS — Has the submitter declared their PDF defines key terms? (Check self-certification)
-3. DECLARED ASSUMPTIONS — Has the submitter declared their PDF states assumptions? (Check self-certification)
-4. STATED MECHANISM — Has the submitter declared their PDF describes a causal mechanism? (Check self-certification)
-5. ENERGY CONSERVATION — Has the submitter declared their PDF addresses conservation laws? (Check self-certification)
-6. EMPIRICAL ANCHOR — Has the submitter declared their PDF identifies observational grounding? (Check self-certification)
-7. FALSIFIABILITY — Is the falsifiability condition testable and specific? (Assess from the Falsifiability field)
-8. SCALE CONSISTENCY — Is a physical or cosmological scale stated? Does the claim appear consistent with that scale? (Assess from Primary Scale and Core Claim fields)
-9. CATEGORY INTEGRITY — Does the core claim use physical causation rather than metaphor or undefined abstraction? (Assess from the Core Claim field)
+1. CLEAR SINGULAR CLAIM — Is there a single, identifiable, operationally testable claim?
+2. DEFINED TERMS AND ONTOLOGY — Are key terms operationally defined? Is the mathematical layer separated from the empirical layer where applicable?
+3. CAUSAL MECHANISM — Is a physical or structural mechanism proposed that explains why the claim holds? Note: if the paper explicitly disclaims causality, mark FAIL.
+4. EMPIRICAL TEST PATH — Is there an explicit, operationalised test the claim could be subjected to? Pre-registered criteria? Quantitative thresholds?
+5. FALSIFIABILITY — Is there a clear, measurable condition that would defeat the claim if observed? An explicit binary falsifier with a threshold?
+6. DEPENDENCY TRANSPARENCY — Does the author explicitly acknowledge assumptions, limitations, and interpretive judgements?
+7. NON-ARBITRARY SELECTION — Is the analysis protected against confirmation bias and post-hoc selection? Was the target defined before the search, or selected from the search?
+8. PREDICTIVE CAPABILITY — Does the claim generate novel testable predictions of undiscovered phenomena, or does it only re-describe existing data?
+9. REPRODUCIBILITY — Could an independent reviewer follow the methodology to replicate the analysis?
 
-For criteria 2-6: If the submitter has self-certified (true), mark as "DECLARED" with a note. If false, mark as "MISSING".
-For criteria 1, 7, 8, 9: Assess the actual content provided in the form fields.
+For each criterion, return:
+- status: one of PASS, CONDITIONAL_PASS, CONDITIONAL_FAIL, FAIL
+- note: one or two sentences explaining the verdict, citing what is or is not present in the PDF
 
-Respond in this exact JSON format only — no markdown, no preamble:
-{{"criteria": [{{"id": 1, "name": "Explicit Claim", "status": "PASS|FLAG|MISSING", "note": "Brief explanation"}}, {{"id": 2, "name": "Key Term Definitions", "status": "DECLARED|MISSING", "note": "Brief explanation"}}, {{"id": 3, "name": "Declared Assumptions", "status": "DECLARED|MISSING", "note": "Brief explanation"}}, {{"id": 4, "name": "Stated Mechanism", "status": "DECLARED|MISSING", "note": "Brief explanation"}}, {{"id": 5, "name": "Energy Conservation", "status": "DECLARED|MISSING", "note": "Brief explanation"}}, {{"id": 6, "name": "Empirical Anchor", "status": "DECLARED|MISSING", "note": "Brief explanation"}}, {{"id": 7, "name": "Falsifiability", "status": "PASS|FLAG", "note": "Brief explanation"}}, {{"id": 8, "name": "Scale Consistency", "status": "PASS|FLAG", "note": "Brief explanation"}}, {{"id": 9, "name": "Category Integrity", "status": "PASS|FLAG", "note": "Brief explanation"}}], "overall": "PASSED|NEEDS REVIEW", "summary": "One sentence overall assessment"}}
+Then compute two overall verdicts:
 
-Status values:
-- PASS = criterion clearly met based on assessed content
-- DECLARED = submitter self-certified their PDF addresses this (cannot be verified from form data alone)
-- FLAG = potential issue identified — examiner should check
-- MISSING = not addressed or not certified
+COMPLIANCE_VERDICT:
+- COMPLIANT if ALL 9 criteria are PASS
+- NON_COMPLIANT otherwise
 
-Overall result:
-- PASSED = all criteria are PASS or DECLARED, no FLAGS or MISSING
-- NEEDS REVIEW = one or more criteria are FLAG or MISSING"""
+WORTH_CHECKING_VERDICT:
+- WORTH_CHECKING if Criterion 1 is PASS or CONDITIONAL_PASS, AND at least 2 of (Criterion 2, Criterion 6, Criterion 9) are PASS or CONDITIONAL_PASS
+- NOT_WORTH_CHECKING otherwise
+
+Respond in this exact JSON format only — no markdown, no preamble, no trailing text:
+
+{{"criteria": [{{"id": 1, "name": "Clear Singular Claim", "status": "...", "note": "..."}},{{"id": 2, "name": "Defined Terms and Ontology", "status": "...", "note": "..."}},{{"id": 3, "name": "Causal Mechanism", "status": "...", "note": "..."}},{{"id": 4, "name": "Empirical Test Path", "status": "...", "note": "..."}},{{"id": 5, "name": "Falsifiability", "status": "...", "note": "..."}},{{"id": 6, "name": "Dependency Transparency", "status": "...", "note": "..."}},{{"id": 7, "name": "Non-Arbitrary Selection", "status": "...", "note": "..."}},{{"id": 8, "name": "Predictive Capability", "status": "...", "note": "..."}},{{"id": 9, "name": "Reproducibility", "status": "...", "note": "..."}}],"compliance_verdict": "COMPLIANT|NON_COMPLIANT","worth_checking_verdict": "WORTH_CHECKING|NOT_WORTH_CHECKING","summary": "One paragraph (3-5 sentences) summarising the submission's structural standing — what it does well, what it lacks, and what would need to change to reach compliance."}}"""
 
             request_data = {
                 "model": "grok-3-mini",
                 "messages": [
-                    {"role": "system", "content": "You are a structural compliance screener for the TSM2 Institute for Cosmology. You evaluate whether submissions meet 9 defined structural criteria. You assess structure and completeness, not scientific truth. Respond only with valid JSON."},
-                    {"role": "user", "content": prompt}
+                    {"role": "system", "content": "You are a structural compliance screener for the TSM2 Institute for Cosmology. Your task is to assess scientific submissions against 9 structural criteria covering claim clarity, mechanism, falsifiability, methodology, predictive capability, and reproducibility. You assess structure and methodological discipline, not scientific truth, and not agreement with any particular theoretical framework. A submission can be excellent structurally while contradicting TSM2, or be aligned with TSM2 while failing structurally. Judge structure only. Respond only with valid JSON in the schema specified."},
+                    {"role": "user", "content": prompt},
                 ],
-                "temperature": 0.3
+                "temperature": 0.3,
+                "max_tokens": 2000,
             }
-            
+
             req = urllib.request.Request(
                 'https://api.x.ai/v1/chat/completions',
                 data=json.dumps(request_data).encode('utf-8'),
                 headers={
                     'Authorization': f'Bearer {grok_api_key}',
                     'Content-Type': 'application/json',
-                    'User-Agent': 'TSM2-Submission-Portal'
+                    'User-Agent': 'TSM2-Submission-Portal',
                 },
-                method='POST'
+                method='POST',
             )
-            
-            with urllib.request.urlopen(req, timeout=30) as response:
+
+            start_time = time.time()
+            with urllib.request.urlopen(req, timeout=60) as response:
+                elapsed = time.time() - start_time
                 result = json.loads(response.read().decode('utf-8'))
                 content = result.get('choices', [{}])[0].get('message', {}).get('content', '')
-                
+                pdf_chars = len(pdf_section) if pdf_section else 0
+                print(f"[GROK] Response time: {elapsed:.1f}s, PDF chars: {pdf_chars}", file=sys.stderr)
+
                 content = content.strip()
                 if content.startswith('```json'):
                     content = content[7:]
@@ -389,37 +470,43 @@ Overall result:
                 if content.endswith('```'):
                     content = content[:-3]
                 content = content.strip()
-                
+
                 try:
                     ai_result = json.loads(content)
-                    print(f"Grok compliance check: {ai_result}", file=sys.stderr)
-                    
+                    print(f"Grok compliance check parsed OK", file=sys.stderr)
+
                     if "criteria" not in ai_result and "compliant" in ai_result:
-                        overall = "PASSED" if ai_result["compliant"] else "NEEDS REVIEW"
+                        # Legacy format fallback
+                        compliance_verdict = "COMPLIANT" if ai_result["compliant"] else "NON_COMPLIANT"
+                        worth_checking_verdict = "WORTH_CHECKING"
                         summary = ai_result.get("message", "Legacy format response.")
                         criteria = []
-                        compliant = ai_result["compliant"]
                     else:
                         criteria = ai_result.get("criteria", [])
-                        overall = ai_result.get("overall", "NEEDS REVIEW")
+                        compliance_verdict = ai_result.get("compliance_verdict", "NON_COMPLIANT")
+                        worth_checking_verdict = ai_result.get("worth_checking_verdict", "NOT_WORTH_CHECKING")
                         summary = ai_result.get("summary", "No summary provided.")
-                        compliant = (overall == "PASSED")
-                    
+
+                    compliant = (compliance_verdict == "COMPLIANT")
+
                     return {
                         "compliant": compliant,
                         "message": summary,
-                        "overall": overall,
-                        "criteria": criteria
+                        "compliance_verdict": compliance_verdict,
+                        "worth_checking_verdict": worth_checking_verdict,
+                        "criteria": criteria,
                     }
-                except json.JSONDecodeError:
-                    print(f"Could not parse Grok response: {content}", file=sys.stderr)
+                except (json.JSONDecodeError, KeyError, TypeError):
+                    print(f"Could not parse Grok response: {content[:500]}", file=sys.stderr)
                     return {
                         "compliant": False,
                         "message": "AI pre-check returned an unexpected format. Manual review required.",
-                        "overall": "NEEDS REVIEW",
-                        "criteria": []
+                        "compliance_verdict": "UNAVAILABLE",
+                        "worth_checking_verdict": "UNAVAILABLE",
+                        "criteria": [],
+                        "error": True,
                     }
-                    
+
         except urllib.error.HTTPError as e:
             error_msg = e.read().decode()
             print(f"[GROK ERROR] Status: {e.code}, Body: {error_msg[:500]}", file=sys.stderr)
@@ -427,18 +514,20 @@ Overall result:
             return {
                 "compliant": False,
                 "message": f"Grok API error (HTTP {e.code}). Manual review required.",
-                "overall": "UNAVAILABLE",
+                "compliance_verdict": "UNAVAILABLE",
+                "worth_checking_verdict": "UNAVAILABLE",
                 "criteria": [],
-                "error": True
+                "error": True,
             }
         except Exception as e:
             print(f"Grok compliance check error: {str(e)}", file=sys.stderr)
             return {
                 "compliant": False,
                 "message": f"AI pre-check error: {str(e)}. Manual review required.",
-                "overall": "UNAVAILABLE",
+                "compliance_verdict": "UNAVAILABLE",
+                "worth_checking_verdict": "UNAVAILABLE",
                 "criteria": [],
-                "error": True
+                "error": True,
             }
     
     def apply_github_labels(self, issue_number, compliance_result):
@@ -450,13 +539,16 @@ Overall result:
                 print("Cannot apply labels: GITHUB_PAT not configured", file=sys.stderr)
                 return
             
-            overall = compliance_result.get('overall', 'UNAVAILABLE') if compliance_result else 'UNAVAILABLE'
-            
+            compliance_verdict = compliance_result.get('compliance_verdict', 'UNAVAILABLE') if compliance_result else 'UNAVAILABLE'
+            worth_checking_verdict = compliance_result.get('worth_checking_verdict', 'UNAVAILABLE') if compliance_result else 'UNAVAILABLE'
+
             labels = ["Pending Review"]
-            if overall == "PASSED":
-                labels.append("Screening: Passed")
-            elif overall == "NEEDS REVIEW":
-                labels.append("Screening: Needs Review")
+            if compliance_verdict == "COMPLIANT":
+                labels.append("AI Pre-Check: Compliant")
+            elif compliance_verdict == "NON_COMPLIANT" and worth_checking_verdict == "WORTH_CHECKING":
+                labels.append("AI Pre-Check: Worth Checking")
+            elif worth_checking_verdict == "NOT_WORTH_CHECKING":
+                labels.append("AI Pre-Check: Structural Issues")
             else:
                 labels.append("Screening: Unavailable")
             
@@ -535,24 +627,44 @@ This information was kept private and is not visible on the public GitHub issue.
                 primary_scale = form_data.get('primary_scale', 'Not specified')
                 date_str = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
                 
-                overall = compliance_result.get('overall', 'UNAVAILABLE') if compliance_result else 'UNAVAILABLE'
+                compliance_verdict = compliance_result.get('compliance_verdict', 'UNAVAILABLE') if compliance_result else 'UNAVAILABLE'
+                worth_checking_verdict = compliance_result.get('worth_checking_verdict', 'UNAVAILABLE') if compliance_result else 'UNAVAILABLE'
                 criteria = compliance_result.get('criteria', []) if compliance_result else []
-                
-                if overall == "PASSED":
-                    screening_section = """AI STRUCTURAL PRE-CHECK: PASSED
-All 9 structural criteria were addressed."""
-                elif overall == "NEEDS REVIEW":
-                    flagged_items = ""
-                    for c in criteria:
-                        status = c.get('status', '')
-                        if status in ('FLAG', 'MISSING'):
-                            flagged_items += f"- Criterion {c.get('id', '?')} ({c.get('name', 'Unknown')}): {status} - {c.get('note', 'No details')}\n"
-                    if not flagged_items:
-                        flagged_items = "- Details unavailable\n"
-                    screening_section = f"""AI STRUCTURAL PRE-CHECK: NEEDS REVIEW
-The automated screening identified potential structural gaps:
 
-{flagged_items.rstrip()}"""
+                def _failed_items(statuses):
+                    items = ""
+                    for c in criteria:
+                        if c.get('status', '') in statuses:
+                            items += f"- Criterion {c.get('id', '?')} ({c.get('name', 'Unknown')}): {c.get('status', '')} - {c.get('note', 'No details')}\n"
+                    return items.rstrip() if items else "- Details unavailable"
+
+                if compliance_verdict == "COMPLIANT":
+                    screening_section = """AI STRUCTURAL PRE-CHECK:
+- Compliance Verdict: COMPLIANT
+- Worth Checking Verdict: WORTH CHECKING
+
+All 9 structural criteria passed."""
+                elif compliance_verdict == "NON_COMPLIANT" and worth_checking_verdict == "WORTH_CHECKING":
+                    screening_section = f"""AI STRUCTURAL PRE-CHECK:
+- Compliance Verdict: NON-COMPLIANT
+- Worth Checking Verdict: WORTH CHECKING
+
+Your submission demonstrates structural discipline but has areas requiring attention.
+The following criteria were not fully met:
+
+{_failed_items(('CONDITIONAL_FAIL', 'FAIL'))}
+
+Your submission will proceed to examiner review."""
+                elif worth_checking_verdict == "NOT_WORTH_CHECKING":
+                    screening_section = f"""AI STRUCTURAL PRE-CHECK:
+- Compliance Verdict: NON-COMPLIANT
+- Worth Checking Verdict: NOT WORTH CHECKING
+
+The automated screening identified significant structural gaps:
+
+{_failed_items(('CONDITIONAL_FAIL', 'FAIL'))}
+
+Please review the full scorecard on your GitHub issue and consider revising your submission before resubmitting."""
                 else:
                     screening_section = """AI STRUCTURAL PRE-CHECK: UNAVAILABLE
 The automated screening could not be completed at this time. This does not affect your submission - it will proceed directly to examiner review."""
@@ -585,7 +697,7 @@ TSM2 Institute for Cosmology"""
                 # The email content is logged here for audit purposes until an external service is integrated.
                 print(f"[SUBMITTER EMAIL] Would send to: {submitter_email}", file=sys.stderr)
                 print(f"[SUBMITTER EMAIL] Subject: {email_subject}", file=sys.stderr)
-                print(f"[SUBMITTER EMAIL] Screening result: {overall}", file=sys.stderr)
+                print(f"[SUBMITTER EMAIL] Compliance: {compliance_verdict} / Worth Checking: {worth_checking_verdict}", file=sys.stderr)
                 sys.stderr.flush()
                     
             except Exception as e:
