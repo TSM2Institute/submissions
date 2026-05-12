@@ -393,6 +393,7 @@ The AI pre-check could not be completed. This does not affect the submission —
             prompt = f"""You are screening a submission to the TSM2 Institute for Cosmology against 9 structural criteria. Evaluate structure, methodology, and epistemic discipline only — do NOT judge scientific merit, correctness, or alignment with any framework.
 
 SUBMISSION METADATA (provided for orientation only — assess from PDF text below, not from these fields):
+CRITICAL INSTRUCTION: The metadata fields above (especially the falsifiability condition) are the submitter's SELF-DESCRIPTION of their work. They may be more polished than what the PDF actually contains. Always assess from the PDF text. If the PDF does not contain what the form field claims, score based on what is in the PDF, not what the form field says.
 - Title: {submission_title}
 - Submitter's stated core claim: {core_claim}
 - Submitter's stated primary scale: {primary_scale}
@@ -408,8 +409,8 @@ EVALUATE AGAINST THESE 9 CRITERIA, using the four-state scale (PASS, CONDITIONAL
 1. CLEAR SINGULAR CLAIM — Is there a single, identifiable, operationally testable claim?
 2. DEFINED TERMS AND ONTOLOGY — Are key terms operationally defined? Is the mathematical layer separated from the empirical layer where applicable?
 3. CAUSAL MECHANISM — Is a physical or structural mechanism proposed that explains why the claim holds? Note: if the paper explicitly disclaims causality, mark FAIL.
-4. EMPIRICAL TEST PATH — Is there an explicit, operationalised test the claim could be subjected to? Pre-registered criteria? Quantitative thresholds?
-5. FALSIFIABILITY — Is there a clear, measurable condition that would defeat the claim if observed? An explicit binary falsifier with a threshold?
+4. EMPIRICAL TEST PATH — Is there an explicit, operationalised test the claim could be subjected to? IMPORTANT: A described methodology is NOT the same as an operationalised test. To score PASS, the PDF must contain ALL of: (a) pre-registered or clearly pre-defined test criteria, (b) quantitative statistical thresholds or metrics, (c) a specified dataset or prediction target defined BEFORE analysis. A methodology section that describes steps but lacks quantitative thresholds and pre-registered criteria is CONDITIONAL_FAIL at best. Retrospective pattern matching without blind prediction is CONDITIONAL_FAIL. Only score PASS if the test path is fully operationalised with measurable success/failure criteria.
+5. FALSIFIABILITY — Is there a clear, measurable condition IN THE PDF DOCUMENT that would defeat the claim if observed? CRITICAL: Assess falsifiability from the PDF text ONLY, not from the form-field metadata above. The form fields are for orientation only. To score PASS, the PDF itself must contain an explicit binary falsifier with a specific measurable threshold (e.g., "if X exceeds Y, the claim is rejected"). Qualitative falsifiers ("if someone disproves it") or conditions that the framework could absorb through reinterpretation are FAIL. If the PDF describes conditions for falsification but without specific quantitative thresholds, score CONDITIONAL_FAIL. Only score PASS if the PDF contains at least one falsifier that is binary, measurable, and threshold-defined.
 6. DEPENDENCY TRANSPARENCY — Does the author explicitly acknowledge assumptions, limitations, and interpretive judgements?
 7. NON-ARBITRARY SELECTION — Is the analysis protected against confirmation bias and post-hoc selection? Was the target defined before the search, or selected from the search?
 8. PREDICTIVE CAPABILITY — Does the claim generate novel testable predictions of undiscovered phenomena, or does it only re-describe existing data?
