@@ -11,15 +11,15 @@ All submissions are evaluated against these 9 mandatory structural criteria. Eve
 
 | # | Criterion | What It Requires |
 |---|-----------|-----------------|
-| 1 | **Explicit Claim** | A single, clear, non-compound claim. No ambiguity, no implication, no inference. |
-| 2 | **Key Term Definitions** | All non-standard or framework-specific terminology explicitly defined and used consistently. |
-| 3 | **Declared Assumptions** | All foundational assumptions stated explicitly. Hidden premises invalidate compliance. |
-| 4 | **Stated Mechanism** | A physical mechanism connecting cause to effect, described as a step-by-step causal sequence. Assertion without mechanism is non-compliant. |
-| 5 | **Energy / Conservation Consistency** | Demonstration that the claim preserves conservation laws, or clear statement of which law is modified and why. No undefined energy sources or sinks. |
-| 6 | **Observational / Empirical Anchor** | Identification of the dataset, measurable phenomenon, or observational reference that grounds the claim. |
-| 7 | **Falsifiability Condition** | At least one clear, testable condition under which the claim would be proven false. If it cannot fail, it cannot pass. |
-| 8 | **Scale Consistency** | The mechanism operates consistently at the declared physical scale. No cross-scale substitution without explicit justification. |
-| 9 | **Category Integrity** | The claim does not replace physical causation with metaphor, geometry, or undefined abstraction. Physical claims require physical mechanisms. |
+| 1 | **Clear Singular Claim** | A single, identifiable, operationally testable claim. Not compound, vague, or metaphorical. |
+| 2 | **Defined Terms and Ontology** | Key technical terms operationally defined; mathematical and empirical layers separated where applicable. |
+| 3 | **Causal Mechanism** | A physical or structural mechanism explaining why the claim holds. More than analogy or mathematics alone. |
+| 4 | **Empirical Test Path** | An explicit, operationalised test with pre-registered criteria, quantitative thresholds, or specified methodology. |
+| 5 | **Falsifiability** | A clear, measurable condition with a defined threshold that would defeat the claim if observed. |
+| 6 | **Dependency Transparency** | Explicit acknowledgement of assumptions, limitations, interpretive judgements, and formalisation requirements. |
+| 7 | **Non-Arbitrary Selection** | Protection against confirmation bias and post-hoc selection. Analysis target defined before the search. |
+| 8 | **Predictive Capability** | At least one novel, testable prediction derived from the claim. Not re-description of existing data. |
+| 9 | **Reproducibility** | Methodology explicit enough for independent replication. |
 
 ### Criterion 10 — Examiner Assessment Only
 

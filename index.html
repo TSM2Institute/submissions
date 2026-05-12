@@ -125,88 +125,88 @@
             <div class="bg-white border border-gray-200 rounded-xl shadow-sm mb-6 overflow-hidden" x-data="{ openCriteria: null }">
                 <div class="px-6 py-4 border-b border-gray-100">
                     <h3 class="text-lg font-semibold text-dark-blue">Submission Criteria — What Your PDF Must Address</h3>
-                    <p class="text-sm text-gray-600 mt-1">All submissions are evaluated against these 9 structural criteria. Your PDF document must address each one. Criterion 10 is assessed by the Examiner only.</p>
+                    <p class="text-sm text-gray-600 mt-1">All submissions are evaluated against these 9 structural criteria. The AI pre-check assesses your PDF content directly against each criterion. Criterion 10 is assessed by the Examiner only.</p>
                 </div>
                 <div class="divide-y divide-gray-100">
                     <div>
                         <button @click="openCriteria = openCriteria === 1 ? null : 1" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
-                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">1.</span>Explicit Claim</span>
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">1.</span>Clear Singular Claim</span>
                             <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 1 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div x-show="openCriteria === 1" x-collapse class="px-6 pb-4">
-                            <p class="text-sm text-gray-600 pl-6">The submission must clearly state what it is claiming. No ambiguity. No implication. No inference. The claim must be singular and non-compound.</p>
+                            <p class="text-sm text-gray-600 pl-6">The submission must state a single, identifiable, operationally testable claim. The claim must not be compound, vague, or metaphorical. If the claim contains multiple independent assertions, or cannot in principle be tested, it does not meet this criterion.</p>
                         </div>
                     </div>
                     <div>
                         <button @click="openCriteria = openCriteria === 2 ? null : 2" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
-                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">2.</span>Definitions of Key Terms</span>
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">2.</span>Defined Terms and Ontology</span>
                             <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 2 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div x-show="openCriteria === 2" x-collapse class="px-6 pb-4">
-                            <p class="text-sm text-gray-600 pl-6">All key terms must be clearly defined and used consistently. Undefined or framework-specific terminology results in non-compliance.</p>
+                            <p class="text-sm text-gray-600 pl-6">All key technical terms must be operationally defined and used consistently. Where applicable, the mathematical layer must be separated from the empirical layer. Undefined terminology, circular definitions, or inconsistent usage results in non-compliance.</p>
                         </div>
                     </div>
                     <div>
                         <button @click="openCriteria = openCriteria === 3 ? null : 3" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
-                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">3.</span>Declared Assumptions</span>
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">3.</span>Causal Mechanism</span>
                             <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 3 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div x-show="openCriteria === 3" x-collapse class="px-6 pb-4">
-                            <p class="text-sm text-gray-600 pl-6">All foundational assumptions must be explicitly declared. Hidden premises invalidate compliance. Assumptions must be stated, not implied.</p>
+                            <p class="text-sm text-gray-600 pl-6">The submission must propose a physical or structural mechanism that explains why the claim holds. The mechanism must go beyond analogy, metaphor, or mathematical description alone. If the paper explicitly disclaims causality, this criterion fails.</p>
                         </div>
                     </div>
                     <div>
                         <button @click="openCriteria = openCriteria === 4 ? null : 4" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
-                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">4.</span>Stated Mechanism (Causal Chain)</span>
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">4.</span>Empirical Test Path</span>
                             <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 4 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div x-show="openCriteria === 4" x-collapse class="px-6 pb-4">
-                            <p class="text-sm text-gray-600 pl-6">The submission must describe the physical mechanism connecting cause to effect. Provide a step-by-step causal sequence. Assertion without mechanism is non-compliant.</p>
+                            <p class="text-sm text-gray-600 pl-6">The submission must specify an explicit, operationalised test the claim could be subjected to. This means pre-registered criteria, quantitative thresholds, or a specified methodology — not a vague suggestion that testing could theoretically occur.</p>
                         </div>
                     </div>
                     <div>
                         <button @click="openCriteria = openCriteria === 5 ? null : 5" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
-                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">5.</span>Energy / Conservation Consistency</span>
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">5.</span>Falsifiability</span>
                             <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 5 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div x-show="openCriteria === 5" x-collapse class="px-6 pb-4">
-                            <p class="text-sm text-gray-600 pl-6">Energy must be conserved, tracked, and accounted for. Demonstrate how the claim preserves conservation laws, or clearly state which law is modified and why. No undefined energy sources or sinks permitted.</p>
+                            <p class="text-sm text-gray-600 pl-6">There must be a clear, measurable condition that would defeat the claim if observed. An explicit binary falsifier with a defined threshold — not a qualitative gesture or a condition that the framework could absorb through reinterpretation. If it cannot fail, it cannot pass.</p>
                         </div>
                     </div>
                     <div>
                         <button @click="openCriteria = openCriteria === 6 ? null : 6" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
-                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">6.</span>Observational or Empirical Anchor</span>
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">6.</span>Dependency Transparency</span>
                             <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 6 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div x-show="openCriteria === 6" x-collapse class="px-6 pb-4">
-                            <p class="text-sm text-gray-600 pl-6">The submission must identify the dataset, measurable phenomenon, or observational reference that grounds the claim. State how the claim interacts with real-world data.</p>
+                            <p class="text-sm text-gray-600 pl-6">The author must explicitly acknowledge their assumptions, observational limitations, interpretive judgements, and any future formalisation requirements. Hidden premises or undeclared dependencies invalidate compliance.</p>
                         </div>
                     </div>
                     <div>
                         <button @click="openCriteria = openCriteria === 7 ? null : 7" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
-                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">7.</span>Falsifiability Condition</span>
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">7.</span>Non-Arbitrary Selection</span>
                             <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 7 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div x-show="openCriteria === 7" x-collapse class="px-6 pb-4">
-                            <p class="text-sm text-gray-600 pl-6">There must be at least one identifiable condition under which the claim could be proven wrong. If it cannot fail, it cannot pass.</p>
+                            <p class="text-sm text-gray-600 pl-6">The analysis must be protected against confirmation bias, cherry-picking, and post-hoc selection. The analysis target must be defined before the search, not selected from it. Pre-registered selection criteria and blind sampling strengthen compliance.</p>
                         </div>
                     </div>
                     <div>
                         <button @click="openCriteria = openCriteria === 8 ? null : 8" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
-                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">8.</span>Scale Consistency</span>
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">8.</span>Predictive Capability</span>
                             <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 8 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div x-show="openCriteria === 8" x-collapse class="px-6 pb-4">
-                            <p class="text-sm text-gray-600 pl-6">The model must operate consistently at the declared physical scale. No cross-scale substitution without explicit justification.</p>
+                            <p class="text-sm text-gray-600 pl-6">The claim must generate at least one novel, testable prediction of undiscovered phenomena. Re-description, classification, or reinterpretation of existing data alone is insufficient. The prediction must be derivable from the claim and independently verifiable.</p>
                         </div>
                     </div>
                     <div>
                         <button @click="openCriteria = openCriteria === 9 ? null : 9" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
-                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">9.</span>Category Integrity</span>
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">9.</span>Reproducibility</span>
                             <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 9 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div x-show="openCriteria === 9" x-collapse class="px-6 pb-4">
-                            <p class="text-sm text-gray-600 pl-6">The claim must not replace physical causation with metaphor, geometry, or undefined abstraction. Physical claims must have physical mechanisms.</p>
+                            <p class="text-sm text-gray-600 pl-6">An independent reviewer must be able to follow the methodology to replicate the analysis from the description provided. Methodology, data sources, and inclusion criteria must be explicit. Significant reliance on subjective judgement weakens compliance.</p>
                         </div>
                     </div>
                     <div class="bg-gray-50 border-t-2 border-gray-200">
@@ -324,25 +324,16 @@
                         <div x-show="currentStep === 3" x-transition>
                             <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 3: Criteria Confirmation</h4>
                             <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                                <p class="text-sm text-blue-800">Your PDF document is the authoritative record. Please confirm it addresses each of the following structural criteria. All boxes must be checked to proceed.</p>
+                                <p class="text-sm text-blue-800">Your PDF document is the authoritative record and will be assessed directly by the AI pre-check. As a self-check, please confirm your PDF addresses each of the following. All boxes must be checked to proceed.</p>
                                 <p class="text-xs text-blue-600 mt-1"><a href="#" @click.prevent="window.scrollTo({top: 0, behavior: 'smooth'})" class="underline hover:text-blue-800">See full criteria descriptions above</a></p>
                             </div>
                             <div class="space-y-4">
                                 <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                                     <label class="flex items-start gap-3 cursor-pointer">
-                                        <input type="checkbox" x-model="form.criteria_definitions" class="mt-1 rounded text-light-blue focus:ring-light-blue">
+                                        <input type="checkbox" x-model="form.criteria_terms" class="mt-1 rounded text-light-blue focus:ring-light-blue">
                                         <div>
-                                            <span class="text-sm font-medium text-gray-900">Key Terms Defined</span>
-                                            <p class="text-xs text-gray-500 mt-0.5">My PDF defines all non-standard or framework-specific terminology used in the claim.</p>
-                                        </div>
-                                    </label>
-                                </div>
-                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                                    <label class="flex items-start gap-3 cursor-pointer">
-                                        <input type="checkbox" x-model="form.criteria_assumptions" class="mt-1 rounded text-light-blue focus:ring-light-blue">
-                                        <div>
-                                            <span class="text-sm font-medium text-gray-900">Assumptions Declared</span>
-                                            <p class="text-xs text-gray-500 mt-0.5">My PDF explicitly states all foundational assumptions upon which the claim depends.</p>
+                                            <span class="text-sm font-medium text-gray-900">Terms Defined <span class="text-xs text-gray-400 font-normal">(Criterion 2)</span></span>
+                                            <p class="text-xs text-gray-500 mt-0.5">My PDF operationally defines all key technical terms and separates mathematical from empirical claims where applicable.</p>
                                         </div>
                                     </label>
                                 </div>
@@ -350,35 +341,62 @@
                                     <label class="flex items-start gap-3 cursor-pointer">
                                         <input type="checkbox" x-model="form.criteria_mechanism" class="mt-1 rounded text-light-blue focus:ring-light-blue">
                                         <div>
-                                            <span class="text-sm font-medium text-gray-900">Mechanism Described</span>
-                                            <p class="text-xs text-gray-500 mt-0.5">My PDF describes the physical mechanism connecting cause to effect, with a step-by-step causal sequence.</p>
+                                            <span class="text-sm font-medium text-gray-900">Causal Mechanism Described <span class="text-xs text-gray-400 font-normal">(Criterion 3)</span></span>
+                                            <p class="text-xs text-gray-500 mt-0.5">My PDF proposes a physical or structural mechanism explaining why the claim holds — not just analogy or mathematics.</p>
                                         </div>
                                     </label>
                                 </div>
                                 <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                                     <label class="flex items-start gap-3 cursor-pointer">
-                                        <input type="checkbox" x-model="form.criteria_energy" class="mt-1 rounded text-light-blue focus:ring-light-blue">
+                                        <input type="checkbox" x-model="form.criteria_test_path" class="mt-1 rounded text-light-blue focus:ring-light-blue">
                                         <div>
-                                            <span class="text-sm font-medium text-gray-900">Energy Conservation Addressed</span>
-                                            <p class="text-xs text-gray-500 mt-0.5">My PDF demonstrates how the claim preserves conservation laws, or states which law is modified and why.</p>
+                                            <span class="text-sm font-medium text-gray-900">Empirical Test Path Specified <span class="text-xs text-gray-400 font-normal">(Criterion 4)</span></span>
+                                            <p class="text-xs text-gray-500 mt-0.5">My PDF specifies an operationalised test with pre-registered criteria, quantitative thresholds, or defined methodology.</p>
                                         </div>
                                     </label>
                                 </div>
                                 <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                                     <label class="flex items-start gap-3 cursor-pointer">
-                                        <input type="checkbox" x-model="form.criteria_empirical" class="mt-1 rounded text-light-blue focus:ring-light-blue">
+                                        <input type="checkbox" x-model="form.criteria_falsifiability" class="mt-1 rounded text-light-blue focus:ring-light-blue">
                                         <div>
-                                            <span class="text-sm font-medium text-gray-900">Empirical Anchor Identified</span>
-                                            <p class="text-xs text-gray-500 mt-0.5">My PDF identifies the dataset, measurable phenomenon, or observational reference that grounds the claim.</p>
+                                            <span class="text-sm font-medium text-gray-900">Falsifiability Condition with Threshold <span class="text-xs text-gray-400 font-normal">(Criterion 5)</span></span>
+                                            <p class="text-xs text-gray-500 mt-0.5">My PDF states a clear, measurable condition that would defeat the claim, with a defined threshold.</p>
                                         </div>
                                     </label>
                                 </div>
                                 <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                                     <label class="flex items-start gap-3 cursor-pointer">
-                                        <input type="checkbox" x-model="form.criteria_category" class="mt-1 rounded text-light-blue focus:ring-light-blue">
+                                        <input type="checkbox" x-model="form.criteria_transparency" class="mt-1 rounded text-light-blue focus:ring-light-blue">
                                         <div>
-                                            <span class="text-sm font-medium text-gray-900">Category Integrity Maintained</span>
-                                            <p class="text-xs text-gray-500 mt-0.5">My PDF does not replace physical causation with metaphor, geometry, or undefined abstraction.</p>
+                                            <span class="text-sm font-medium text-gray-900">Dependencies and Limitations Declared <span class="text-xs text-gray-400 font-normal">(Criterion 6)</span></span>
+                                            <p class="text-xs text-gray-500 mt-0.5">My PDF explicitly acknowledges assumptions, observational limitations, and interpretive judgements.</p>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                    <label class="flex items-start gap-3 cursor-pointer">
+                                        <input type="checkbox" x-model="form.criteria_selection" class="mt-1 rounded text-light-blue focus:ring-light-blue">
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-900">Selection Criteria Pre-Defined <span class="text-xs text-gray-400 font-normal">(Criterion 7)</span></span>
+                                            <p class="text-xs text-gray-500 mt-0.5">My PDF defines the analysis target before the search, with protection against confirmation bias and cherry-picking.</p>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                    <label class="flex items-start gap-3 cursor-pointer">
+                                        <input type="checkbox" x-model="form.criteria_predictions" class="mt-1 rounded text-light-blue focus:ring-light-blue">
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-900">Novel Predictions Derived <span class="text-xs text-gray-400 font-normal">(Criterion 8)</span></span>
+                                            <p class="text-xs text-gray-500 mt-0.5">My PDF derives at least one novel, testable prediction — not just re-description of existing data.</p>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                    <label class="flex items-start gap-3 cursor-pointer">
+                                        <input type="checkbox" x-model="form.criteria_reproducibility" class="mt-1 rounded text-light-blue focus:ring-light-blue">
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-900">Methodology Reproducible <span class="text-xs text-gray-400 font-normal">(Criterion 9)</span></span>
+                                            <p class="text-xs text-gray-500 mt-0.5">My PDF provides enough methodological detail for an independent reviewer to replicate the analysis.</p>
                                         </div>
                                     </label>
                                 </div>
@@ -543,12 +561,14 @@
                     core_claim: '',
                     primary_scale: '',
                     falsifiability: '',
-                    criteria_definitions: false,
-                    criteria_assumptions: false,
+                    criteria_terms: false,
                     criteria_mechanism: false,
-                    criteria_energy: false,
-                    criteria_empirical: false,
-                    criteria_category: false,
+                    criteria_test_path: false,
+                    criteria_falsifiability: false,
+                    criteria_transparency: false,
+                    criteria_selection: false,
+                    criteria_predictions: false,
+                    criteria_reproducibility: false,
                     declaration: false
                 },
 
@@ -605,7 +625,7 @@
                             }
                             return true;
                         case 3:
-                            if (!this.form.criteria_definitions || !this.form.criteria_assumptions || !this.form.criteria_mechanism || !this.form.criteria_energy || !this.form.criteria_empirical || !this.form.criteria_category) {
+                            if (!this.form.criteria_terms || !this.form.criteria_mechanism || !this.form.criteria_test_path || !this.form.criteria_falsifiability || !this.form.criteria_transparency || !this.form.criteria_selection || !this.form.criteria_predictions || !this.form.criteria_reproducibility) {
                                 this.error = 'Please confirm your PDF addresses all structural criteria before proceeding.';
                                 return false;
                             }
@@ -668,14 +688,16 @@ ${this.form.falsifiability}
 
 The submitter has confirmed their PDF addresses:
 
-- [x] Key terms defined (Criterion 2)
-- [x] Assumptions declared (Criterion 3)
-- [x] Mechanism described (Criterion 4)
-- [x] Energy conservation addressed (Criterion 5)
-- [x] Empirical anchor identified (Criterion 6)
-- [x] Category integrity maintained (Criterion 9)
+- [x] Terms operationally defined (Criterion 2)
+- [x] Causal mechanism described (Criterion 3)
+- [x] Empirical test path specified (Criterion 4)
+- [x] Falsifiability condition with threshold (Criterion 5)
+- [x] Dependencies and limitations declared (Criterion 6)
+- [x] Selection criteria pre-defined (Criterion 7)
+- [x] Novel predictions derived (Criterion 8)
+- [x] Methodology reproducible (Criterion 9)
 
-*Note: Criteria 1 (Explicit Claim), 7 (Falsifiability), and 8 (Scale) are captured in form fields above.*
+*Note: Criterion 1 (Clear Singular Claim) is captured in the Core Claim field above. These self-certifications are informational — the AI pre-check assesses the PDF content directly.*
 
 ---
 
