@@ -24,9 +24,7 @@ except ImportError:
 
 STATUS_DISPLAY = {
     "PASS": "✅ Pass",
-    "CONDITIONAL_PASS": "⚠️ Conditional Pass",
-    "CONDITIONAL_FAIL": "⚠️ Conditional Fail",
-    "FAIL": "❌ Fail",
+    "NON_COMPLIANT": "❌ Non-Compliant",
 }
 
 
@@ -244,9 +242,9 @@ class RequestHandler(SimpleHTTPRequestHandler):
 
             if compliance_result:
                 criteria_list = compliance_result.get('criteria', [])
-                compliance_verdict = compliance_result.get('compliance_verdict', 'UNAVAILABLE')
-                worth_checking_verdict = compliance_result.get('worth_checking_verdict', 'UNAVAILABLE')
+                overall_status = compliance_result.get('overall_status', 'UNAVAILABLE')
                 summary = compliance_result.get('message', 'No summary provided.')
+                minimum_corrections = compliance_result.get('minimum_corrections', [])
                 is_error = compliance_result.get('error', False)
 
                 extraction_note = ""
@@ -255,7 +253,7 @@ class RequestHandler(SimpleHTTPRequestHandler):
                 elif pdf_truncated:
                     extraction_note = f"\n> ⚠️ Note: The PDF text was truncated at approximately 60,000 characters ({pdf_page_count} pages total). The AI assessment is based on the content up to the truncation point.\n"
 
-                if is_error or compliance_verdict == "UNAVAILABLE":
+                if is_error or overall_status == "UNAVAILABLE":
                     compliance_section = f"""
 
 ---
@@ -264,8 +262,7 @@ class RequestHandler(SimpleHTTPRequestHandler):
 
 > **This is an automated structural screening, not a scientific evaluation.**
 
-**Compliance Verdict:** UNAVAILABLE
-**Worth Checking Verdict:** UNAVAILABLE
+**Overall Status:** UNAVAILABLE
 
 The AI pre-check could not be completed. This does not affect the submission — it proceeds to manual review.
 
@@ -275,7 +272,7 @@ The AI pre-check could not be completed. This does not affect the submission —
                     scorecard_rows = ""
                     for c in criteria_list:
                         rendered_status = STATUS_DISPLAY.get(c.get('status', ''), c.get('status', ''))
-                        scorecard_rows += f"| {c.get('id', '')} | {c.get('name', '')} | {rendered_status} | {c.get('note', '')} |\n"
+                        scorecard_rows += f"| {c.get('id', '')} | {c.get('name', '')} | {rendered_status} | {c.get('reason', '')} |\n"
 
                     compliance_section = f"""
 
@@ -288,13 +285,29 @@ The AI pre-check could not be completed. This does not affect the submission —
 > A submission that contradicts TSM2 can still pass; a submission that agrees with TSM2 can still fail.
 > Final compliance determination is made by a qualified examiner.
 
-**Compliance Verdict:** {compliance_verdict}
-**Worth Checking Verdict:** {worth_checking_verdict}
+**Overall Status:** {overall_status}
 
-| # | Criterion | Status | Note |
-|---|-----------|--------|------|
+| # | Criterion | Status | Reason |
+| --- | --- | --- | --- |
 {scorecard_rows}{extraction_note}
 **Summary:** {summary}
+"""
+
+                    if overall_status == "NON_COMPLIANT":
+                        non_compliant_criteria = [c for c in criteria_list if c.get('status') == 'NON_COMPLIANT']
+                        if non_compliant_criteria:
+                            corrections_md = ""
+                            for c in non_compliant_criteria:
+                                correction = c.get('required_correction') or 'No correction provided.'
+                                corrections_md += f"\n**{c.get('id', '?')}. {c.get('name', 'Unknown')}**\n\n{correction}\n"
+                            compliance_section += f"""
+---
+
+### Minimum Corrections Required for Compliance
+
+The following corrections must be addressed for this submission to meet structural compliance. Each criterion below failed; the prescribed correction is shown.
+{corrections_md}
+Once these corrections are addressed, the submission may be revised and re-submitted for re-evaluation.
 """
                 else:
                     compliance_section = f"""
@@ -305,8 +318,7 @@ The AI pre-check could not be completed. This does not affect the submission —
 
 > **This is an automated structural screening, not a scientific evaluation.**
 
-**Compliance Verdict:** {compliance_verdict}
-**Worth Checking Verdict:** {worth_checking_verdict}
+**Overall Status:** {overall_status}
 {extraction_note}
 **Summary:** {summary}
 """
@@ -373,9 +385,9 @@ The AI pre-check could not be completed. This does not affect the submission —
             return {
                 "compliant": False,
                 "message": "AI pre-check not configured.",
-                "compliance_verdict": "UNAVAILABLE",
-                "worth_checking_verdict": "UNAVAILABLE",
+                "overall_status": "UNAVAILABLE",
                 "criteria": [],
+                "minimum_corrections": [],
                 "error": True,
             }
 
@@ -404,35 +416,63 @@ PDF TEXT:
 {pdf_section}
 ---
 
-EVALUATE AGAINST THESE 9 CRITERIA, using the four-state scale (PASS, CONDITIONAL_PASS, CONDITIONAL_FAIL, FAIL):
+EVALUATE AGAINST THESE 9 CRITERIA, using BINARY status only: PASS or NON_COMPLIANT.
 
-1. CLEAR SINGULAR CLAIM — Is there a single, identifiable, operationally testable claim?
-2. DEFINED TERMS AND ONTOLOGY — Are key terms operationally defined? Is the mathematical layer separated from the empirical layer where applicable?
-3. CAUSAL MECHANISM — Is a physical or structural mechanism proposed that explains why the claim holds? Note: if the paper explicitly disclaims causality, mark FAIL.
-4. EMPIRICAL TEST PATH — Is there an explicit, operationalised test the claim could be subjected to? IMPORTANT: A described methodology is NOT the same as an operationalised test. To score PASS, the PDF must contain ALL of: (a) pre-registered or clearly pre-defined test criteria, (b) quantitative statistical thresholds or metrics, (c) a specified dataset or prediction target defined BEFORE analysis. A methodology section that describes steps but lacks quantitative thresholds and pre-registered criteria is CONDITIONAL_FAIL at best. Retrospective pattern matching without blind prediction is CONDITIONAL_FAIL. Only score PASS if the test path is fully operationalised with measurable success/failure criteria.
-5. FALSIFIABILITY — Is there a clear, measurable condition IN THE PDF DOCUMENT that would defeat the claim if observed? CRITICAL: Assess falsifiability from the PDF text ONLY, not from the form-field metadata above. The form fields are for orientation only. To score PASS, the PDF itself must contain an explicit binary falsifier with a specific measurable threshold (e.g., "if X exceeds Y, the claim is rejected"). Qualitative falsifiers ("if someone disproves it") or conditions that the framework could absorb through reinterpretation are FAIL. If the PDF describes conditions for falsification but without specific quantitative thresholds, score CONDITIONAL_FAIL. Only score PASS if the PDF contains at least one falsifier that is binary, measurable, and threshold-defined.
-6. DEPENDENCY TRANSPARENCY — Does the author explicitly acknowledge assumptions, limitations, and interpretive judgements?
-7. NON-ARBITRARY SELECTION — Is the analysis protected against confirmation bias and post-hoc selection? Was the target defined before the search, or selected from the search?
-8. PREDICTIVE CAPABILITY — Does the claim generate novel testable predictions of undiscovered phenomena, or does it only re-describe existing data?
-9. REPRODUCIBILITY — Could an independent reviewer follow the methodology to replicate the analysis?
+1. CLEAR CORE CLAIM — Is there an identifiable, consistent central proposition? The claim should be stated clearly enough that a reader can identify what the manuscript is asserting. It does not need to be reducible to a single sentence — coherent restatements across the document are acceptable. PASS if a clear central claim is identifiable. NON_COMPLIANT if the claim is incoherent, contradictory across sections, or cannot be extracted.
+
+2. DEFINED TERMS — Are the key technical terms operationally defined and consistently applied? Definitions can be in a glossary, a definitions section, or inline at first use. PASS if the primary technical vocabulary is defined and used consistently. NON_COMPLIANT if core terms are undefined, used inconsistently, or rely on metaphor without operational grounding.
+
+3. MECHANISM — Is there a coherent mechanism pathway that explains how the claim leads to its consequences? The mechanism can be conceptual rather than formally axiomatized — what matters is that a generative sequence exists (e.g., "polarity → distinction → relation → order → number → operations"). PASS if a coherent mechanism pathway is present, even if conceptual. NON_COMPLIANT if no mechanism is offered, or if the paper explicitly disclaims any generative/causal pathway.
+
+4. TEST PATH — Does the manuscript provide at least one explicit testable procedure? Tests can be experimental, computational, mathematical, or observational. Each test must include: (a) a prediction or expected outcome, (b) a procedure for evaluating it, and (c) a condition under which the test would fail. PASS if at least one testable procedure meeting all three elements is present. NON_COMPLIANT if "tests" consist only of compatibility observations, interpretive mappings, or post-hoc pattern matching without a defined failure condition.
+
+5. FALSIFIABILITY — Does the manuscript contain explicit falsifiers — conditions under which the claim or framework would be rejected? Falsifiers should be identifiable failure conditions (e.g., "discovery of a fundamental equation lacking frequency-mode representation"). They do not need to be expressed as binary numerical thresholds. PASS if at least one identifiable falsifier is stated. NON_COMPLIANT if the framework can absorb any contradictory observation through reinterpretation, or no failure conditions are articulated.
+
+6. DEPENDENCY TRANSPARENCY — Does the author explicitly acknowledge assumptions, conceptual scope, limitations, and what the framework does not claim? PASS if a dedicated limitations/scope/assumptions section is present, or if these acknowledgments are clearly distributed and identifiable. NON_COMPLIANT if assumptions are hidden, unstated, or the manuscript overreaches its own scope.
+
+7. NON-ARBITRARY SELECTION — Is the selection of primitives, categories, or analytical units justified? The manuscript should explain why these specific elements were chosen and why alternatives were rejected or considered. PASS if a justification section or argument is present (e.g., a "Why these primitives?" section comparing alternatives). NON_COMPLIANT if selection is post-hoc or unjustified.
+
+8. PREDICTIVE CAPABILITY — Does the manuscript produce at least one measurable prediction, scaling relation, or numerical consequence derived from the framework? Predictions can be quantitative scaling relations, numerical values, observational signatures, or model-specific expected outcomes. PASS if at least one explicit prediction is derivable from the framework. NON_COMPLIANT if the manuscript only re-describes or re-interprets existing data without generating new predictions.
+
+9. REPRODUCIBILITY — Could an independent reviewer reproduce the analysis using the methodology, sources, and procedures described? PASS if the logical framework, cited equations, and procedures are independently traceable. NON_COMPLIANT if the methodology cannot be replicated from the manuscript alone.
 
 For each criterion, return:
-- status: one of PASS, CONDITIONAL_PASS, CONDITIONAL_FAIL, FAIL
-- note: one or two sentences explaining the verdict, citing what is or is not present in the PDF
+- status: either "PASS" or "NON_COMPLIANT" (binary only — no conditional states)
+- reason: one short paragraph (1-3 sentences) describing what is present or absent in the PDF that supports this verdict. Cite specific sections, figures, or terms where possible.
+- required_correction: ONLY populated when status is NON_COMPLIANT. This must be a PRESCRIPTIVE INSTRUCTION telling the submitter what to add, not a diagnostic description of the gap. Use Geoff's voice:
+  - Start with a concrete action: "Add a dedicated section titled X" or "Provide at least one Y" or "Justify the selection of Z by..."
+  - Include 2-4 bulleted examples of what the corrected content might look like
+  - End with a clear quality bar: "These must include a prediction, procedure, and failure condition" or similar
+  - Set required_correction to null when status is PASS
 
-Then compute two overall verdicts:
+CRITICAL: The required_correction is the submitter's repair instruction. They should be able to action it directly. Do NOT write generic feedback like "consider improving X" — write specific instructions like "Add a section titled 'Potential Falsifiers' listing at least three failure conditions. Examples may include: (a) discovery of foundational equations irreducible to oscillatory representation, (b) proof that polarity cannot generate required mathematical structures, (c) observational signatures incompatible with the framework. Each falsifier must be an identifiable failure condition the framework could not absorb."
 
-COMPLIANCE_VERDICT:
-- COMPLIANT if ALL 9 criteria are PASS
-- NON_COMPLIANT otherwise
+Compute one overall verdict:
 
-WORTH_CHECKING_VERDICT:
-- WORTH_CHECKING if Criterion 1 is PASS or CONDITIONAL_PASS, AND at least 2 of (Criterion 2, Criterion 6, Criterion 9) are PASS or CONDITIONAL_PASS
-- NOT_WORTH_CHECKING otherwise
+OVERALL_STATUS:
+- "COMPLIANT" if ALL 9 criteria are PASS
+- "NON_COMPLIANT" if any criterion is NON_COMPLIANT
+
+Also produce minimum_corrections — an ordered list of the required corrections from the NON_COMPLIANT criteria, in criterion order. This is empty when overall_status is COMPLIANT.
 
 Respond in this exact JSON format only — no markdown, no preamble, no trailing text:
 
-{{"criteria": [{{"id": 1, "name": "Clear Singular Claim", "status": "...", "note": "..."}},{{"id": 2, "name": "Defined Terms and Ontology", "status": "...", "note": "..."}},{{"id": 3, "name": "Causal Mechanism", "status": "...", "note": "..."}},{{"id": 4, "name": "Empirical Test Path", "status": "...", "note": "..."}},{{"id": 5, "name": "Falsifiability", "status": "...", "note": "..."}},{{"id": 6, "name": "Dependency Transparency", "status": "...", "note": "..."}},{{"id": 7, "name": "Non-Arbitrary Selection", "status": "...", "note": "..."}},{{"id": 8, "name": "Predictive Capability", "status": "...", "note": "..."}},{{"id": 9, "name": "Reproducibility", "status": "...", "note": "..."}}],"compliance_verdict": "COMPLIANT|NON_COMPLIANT","worth_checking_verdict": "WORTH_CHECKING|NOT_WORTH_CHECKING","summary": "One paragraph (3-5 sentences) summarising the submission's structural standing — what it does well, what it lacks, and what would need to change to reach compliance."}}"""
+{{
+  "criteria": [
+    {{"id": 1, "name": "Clear Core Claim", "status": "PASS|NON_COMPLIANT", "reason": "...", "required_correction": "..." or null}},
+    {{"id": 2, "name": "Defined Terms", "status": "PASS|NON_COMPLIANT", "reason": "...", "required_correction": "..." or null}},
+    {{"id": 3, "name": "Mechanism", "status": "PASS|NON_COMPLIANT", "reason": "...", "required_correction": "..." or null}},
+    {{"id": 4, "name": "Test Path", "status": "PASS|NON_COMPLIANT", "reason": "...", "required_correction": "..." or null}},
+    {{"id": 5, "name": "Falsifiability", "status": "PASS|NON_COMPLIANT", "reason": "...", "required_correction": "..." or null}},
+    {{"id": 6, "name": "Dependency Transparency", "status": "PASS|NON_COMPLIANT", "reason": "...", "required_correction": "..." or null}},
+    {{"id": 7, "name": "Non-Arbitrary Selection", "status": "PASS|NON_COMPLIANT", "reason": "...", "required_correction": "..." or null}},
+    {{"id": 8, "name": "Predictive Capability", "status": "PASS|NON_COMPLIANT", "reason": "...", "required_correction": "..." or null}},
+    {{"id": 9, "name": "Reproducibility", "status": "PASS|NON_COMPLIANT", "reason": "...", "required_correction": "..." or null}}
+  ],
+  "overall_status": "COMPLIANT|NON_COMPLIANT",
+  "minimum_corrections": ["...", "..."],
+  "summary": "One short paragraph (2-4 sentences) summarizing the submission's structural standing. If COMPLIANT, state that all 9 criteria are met and note any recommended improvements. If NON_COMPLIANT, state which criteria failed and reference the minimum corrections list."
+}}"""
 
             request_data = {
                 "model": "grok-3-mini",
@@ -478,33 +518,33 @@ Respond in this exact JSON format only — no markdown, no preamble, no trailing
 
                     if "criteria" not in ai_result and "compliant" in ai_result:
                         # Legacy format fallback
-                        compliance_verdict = "COMPLIANT" if ai_result["compliant"] else "NON_COMPLIANT"
-                        worth_checking_verdict = "WORTH_CHECKING"
+                        overall_status = "COMPLIANT" if ai_result["compliant"] else "NON_COMPLIANT"
                         summary = ai_result.get("message", "Legacy format response.")
                         criteria = []
+                        minimum_corrections = []
                     else:
                         criteria = ai_result.get("criteria", [])
-                        compliance_verdict = ai_result.get("compliance_verdict", "NON_COMPLIANT")
-                        worth_checking_verdict = ai_result.get("worth_checking_verdict", "NOT_WORTH_CHECKING")
+                        overall_status = ai_result.get("overall_status", "NON_COMPLIANT")
                         summary = ai_result.get("summary", "No summary provided.")
+                        minimum_corrections = ai_result.get("minimum_corrections", [])
 
-                    compliant = (compliance_verdict == "COMPLIANT")
+                    compliant = (overall_status == "COMPLIANT")
 
                     return {
                         "compliant": compliant,
                         "message": summary,
-                        "compliance_verdict": compliance_verdict,
-                        "worth_checking_verdict": worth_checking_verdict,
+                        "overall_status": overall_status,
                         "criteria": criteria,
+                        "minimum_corrections": minimum_corrections,
                     }
                 except (json.JSONDecodeError, KeyError, TypeError):
                     print(f"Could not parse Grok response: {content[:500]}", file=sys.stderr)
                     return {
                         "compliant": False,
                         "message": "AI pre-check returned an unexpected format. Manual review required.",
-                        "compliance_verdict": "UNAVAILABLE",
-                        "worth_checking_verdict": "UNAVAILABLE",
+                        "overall_status": "UNAVAILABLE",
                         "criteria": [],
+                        "minimum_corrections": [],
                         "error": True,
                     }
 
@@ -515,9 +555,9 @@ Respond in this exact JSON format only — no markdown, no preamble, no trailing
             return {
                 "compliant": False,
                 "message": f"Grok API error (HTTP {e.code}). Manual review required.",
-                "compliance_verdict": "UNAVAILABLE",
-                "worth_checking_verdict": "UNAVAILABLE",
+                "overall_status": "UNAVAILABLE",
                 "criteria": [],
+                "minimum_corrections": [],
                 "error": True,
             }
         except Exception as e:
@@ -525,9 +565,9 @@ Respond in this exact JSON format only — no markdown, no preamble, no trailing
             return {
                 "compliant": False,
                 "message": f"AI pre-check error: {str(e)}. Manual review required.",
-                "compliance_verdict": "UNAVAILABLE",
-                "worth_checking_verdict": "UNAVAILABLE",
+                "overall_status": "UNAVAILABLE",
                 "criteria": [],
+                "minimum_corrections": [],
                 "error": True,
             }
     
@@ -540,16 +580,13 @@ Respond in this exact JSON format only — no markdown, no preamble, no trailing
                 print("Cannot apply labels: GITHUB_PAT not configured", file=sys.stderr)
                 return
             
-            compliance_verdict = compliance_result.get('compliance_verdict', 'UNAVAILABLE') if compliance_result else 'UNAVAILABLE'
-            worth_checking_verdict = compliance_result.get('worth_checking_verdict', 'UNAVAILABLE') if compliance_result else 'UNAVAILABLE'
+            overall_status = compliance_result.get('overall_status', 'UNAVAILABLE') if compliance_result else 'UNAVAILABLE'
 
             labels = ["Pending Review"]
-            if compliance_verdict == "COMPLIANT":
+            if overall_status == "COMPLIANT":
                 labels.append("AI Pre-Check: Compliant")
-            elif compliance_verdict == "NON_COMPLIANT" and worth_checking_verdict == "WORTH_CHECKING":
-                labels.append("AI Pre-Check: Worth Checking")
-            elif worth_checking_verdict == "NOT_WORTH_CHECKING":
-                labels.append("AI Pre-Check: Structural Issues")
+            elif overall_status == "NON_COMPLIANT":
+                labels.append("AI Pre-Check: Non-Compliant")
             else:
                 labels.append("Screening: Unavailable")
             
@@ -628,44 +665,30 @@ This information was kept private and is not visible on the public GitHub issue.
                 primary_scale = form_data.get('primary_scale', 'Not specified')
                 date_str = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
                 
-                compliance_verdict = compliance_result.get('compliance_verdict', 'UNAVAILABLE') if compliance_result else 'UNAVAILABLE'
-                worth_checking_verdict = compliance_result.get('worth_checking_verdict', 'UNAVAILABLE') if compliance_result else 'UNAVAILABLE'
+                overall_status = compliance_result.get('overall_status', 'UNAVAILABLE') if compliance_result else 'UNAVAILABLE'
                 criteria = compliance_result.get('criteria', []) if compliance_result else []
 
-                def _failed_items(statuses):
+                def _failed_items():
                     items = ""
                     for c in criteria:
-                        if c.get('status', '') in statuses:
-                            items += f"- Criterion {c.get('id', '?')} ({c.get('name', 'Unknown')}): {c.get('status', '')} - {c.get('note', 'No details')}\n"
+                        if c.get('status', '') == 'NON_COMPLIANT':
+                            items += f"- Criterion {c.get('id', '?')} ({c.get('name', 'Unknown')}): {c.get('reason', 'No details')}\n"
                     return items.rstrip() if items else "- Details unavailable"
 
-                if compliance_verdict == "COMPLIANT":
+                if overall_status == "COMPLIANT":
                     screening_section = """AI STRUCTURAL PRE-CHECK:
-- Compliance Verdict: COMPLIANT
-- Worth Checking Verdict: WORTH CHECKING
+- Overall Status: COMPLIANT
 
 All 9 structural criteria passed."""
-                elif compliance_verdict == "NON_COMPLIANT" and worth_checking_verdict == "WORTH_CHECKING":
+                elif overall_status == "NON_COMPLIANT":
                     screening_section = f"""AI STRUCTURAL PRE-CHECK:
-- Compliance Verdict: NON-COMPLIANT
-- Worth Checking Verdict: WORTH CHECKING
+- Overall Status: NON-COMPLIANT
 
-Your submission demonstrates structural discipline but has areas requiring attention.
-The following criteria were not fully met:
+The automated screening identified the following criteria as non-compliant:
 
-{_failed_items(('CONDITIONAL_FAIL', 'FAIL'))}
+{_failed_items()}
 
-Your submission will proceed to examiner review."""
-                elif worth_checking_verdict == "NOT_WORTH_CHECKING":
-                    screening_section = f"""AI STRUCTURAL PRE-CHECK:
-- Compliance Verdict: NON-COMPLIANT
-- Worth Checking Verdict: NOT WORTH CHECKING
-
-The automated screening identified significant structural gaps:
-
-{_failed_items(('CONDITIONAL_FAIL', 'FAIL'))}
-
-Please review the full scorecard on your GitHub issue and consider revising your submission before resubmitting."""
+Please review the full scorecard and prescribed corrections on your GitHub issue."""
                 else:
                     screening_section = """AI STRUCTURAL PRE-CHECK: UNAVAILABLE
 The automated screening could not be completed at this time. This does not affect your submission - it will proceed directly to examiner review."""
@@ -698,7 +721,7 @@ TSM2 Institute for Cosmology"""
                 # The email content is logged here for audit purposes until an external service is integrated.
                 print(f"[SUBMITTER EMAIL] Would send to: {submitter_email}", file=sys.stderr)
                 print(f"[SUBMITTER EMAIL] Subject: {email_subject}", file=sys.stderr)
-                print(f"[SUBMITTER EMAIL] Compliance: {compliance_verdict} / Worth Checking: {worth_checking_verdict}", file=sys.stderr)
+                print(f"[SUBMITTER EMAIL] Overall Status: {overall_status}", file=sys.stderr)
                 sys.stderr.flush()
                     
             except Exception as e:

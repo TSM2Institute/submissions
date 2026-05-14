@@ -130,7 +130,7 @@
                 <div class="divide-y divide-gray-100">
                     <div>
                         <button @click="openCriteria = openCriteria === 1 ? null : 1" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
-                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">1.</span>Clear Singular Claim</span>
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">1.</span>Clear Core Claim</span>
                             <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 1 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div x-show="openCriteria === 1" x-collapse class="px-6 pb-4">
@@ -139,7 +139,7 @@
                     </div>
                     <div>
                         <button @click="openCriteria = openCriteria === 2 ? null : 2" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
-                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">2.</span>Defined Terms and Ontology</span>
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">2.</span>Defined Terms</span>
                             <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 2 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div x-show="openCriteria === 2" x-collapse class="px-6 pb-4">
@@ -148,7 +148,7 @@
                     </div>
                     <div>
                         <button @click="openCriteria = openCriteria === 3 ? null : 3" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
-                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">3.</span>Causal Mechanism</span>
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">3.</span>Mechanism</span>
                             <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 3 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div x-show="openCriteria === 3" x-collapse class="px-6 pb-4">
@@ -157,7 +157,7 @@
                     </div>
                     <div>
                         <button @click="openCriteria = openCriteria === 4 ? null : 4" class="w-full px-6 py-3 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
-                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">4.</span>Empirical Test Path</span>
+                            <span class="font-medium text-gray-900 text-sm"><span class="text-light-blue font-semibold mr-2">4.</span>Test Path</span>
                             <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-180': openCriteria === 4 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div x-show="openCriteria === 4" x-collapse class="px-6 pb-4">
@@ -229,24 +229,13 @@
                         </svg>
                     </div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-2">Submission Received</h3>
-                    <p class="text-gray-600 mb-2">Your compliance case has been created successfully.</p>
-                    <p class="text-sm text-gray-500 mb-4">Your personal details have been sent privately to the Institute Director (not public).</p>
-
-                    <div x-show="complianceResult" class="mt-4 mb-6 p-4 rounded-lg text-left" :class="verdictStyles().box">
-                        <div class="flex items-start gap-3">
-                            <span x-text="verdictStyles().icon" class="text-2xl leading-none flex-shrink-0"></span>
-                            <div>
-                                <p class="font-medium" :class="verdictStyles().title" x-text="verdictStyles().heading"></p>
-                                <p class="text-sm mt-1" :class="verdictStyles().body" x-text="verdictStyles().subtext"></p>
-                                <p class="text-sm mt-2" :class="verdictStyles().body" x-text="complianceResult?.message"></p>
-                                <p class="text-xs mt-2 text-gray-500 italic">The AI pre-check evaluates structure, not scientific truth. Final compliance is determined by an examiner.</p>
-                            </div>
-                        </div>
-                    </div>
+                    <p class="text-gray-600 mb-2">Your submission has been received. A reference has been created for your records.</p>
+                    <p class="text-gray-600 mb-4">The Institute will review your submission and be in touch.</p>
+                    <p class="text-sm text-gray-500 mb-6">Your personal details have been sent privately to the Institute Director (not public).</p>
 
                     <a :href="issueUrl" target="_blank" class="inline-flex items-center gap-2 px-6 py-3 bg-dark-blue text-white font-medium rounded-lg hover:bg-accent-blue transition-colors">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                        View Issue on GitHub
+                        View your submission reference
                     </a>
                 </div>
             </template>
@@ -495,18 +484,6 @@
                             <p class="text-sm text-red-700" x-text="error"></p>
                         </div>
 
-                        <div x-show="complianceResult" class="mt-4 p-4 rounded-lg" :class="verdictStyles().box">
-                            <div class="flex items-start gap-3">
-                                <span x-text="verdictStyles().icon" class="text-2xl leading-none flex-shrink-0"></span>
-                                <div>
-                                    <p class="font-medium" :class="verdictStyles().title" x-text="verdictStyles().heading"></p>
-                                    <p class="text-sm mt-1" :class="verdictStyles().body" x-text="verdictStyles().subtext"></p>
-                                    <p class="text-sm mt-2" :class="verdictStyles().body" x-text="complianceResult?.message"></p>
-                                    <p class="text-xs mt-2 text-gray-500 italic">The AI pre-check evaluates structure, not scientific truth.</p>
-                                </div>
-                            </div>
-                        </div>
-
                         <div class="flex justify-between mt-8 pt-4 border-t border-gray-100">
                             <button type="button" @click="prevStep" x-show="currentStep > 1" class="px-5 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
                                 Back
@@ -702,7 +679,7 @@ The submitter has confirmed their PDF addresses:
 - [x] Novel predictions derived (Criterion 8)
 - [x] Methodology reproducible (Criterion 9)
 
-*Note: Criterion 1 (Clear Singular Claim) is captured in the Core Claim field above. These self-certifications are informational — the AI pre-check assesses the PDF content directly.*
+*Note: Criterion 1 (Clear Core Claim) is captured in the Core Claim field above. These self-certifications are informational — the AI pre-check assesses the PDF content directly.*
 
 ---
 
@@ -716,49 +693,6 @@ The submitter has confirmed their PDF addresses:
 - [x] Submitter has read and accepted the Submission Instructions
 - [x] Understands compliance is binary and does not imply endorsement
 - [x] Confirms the attached PDF is the authoritative version`;
-                },
-
-                verdictStyles() {
-                    const cv = this.complianceResult?.compliance_verdict;
-                    const wc = this.complianceResult?.worth_checking_verdict;
-                    if (cv === 'COMPLIANT') {
-                        return {
-                            box: 'bg-green-50 border border-green-200',
-                            title: 'text-green-800',
-                            body: 'text-green-700',
-                            icon: '✅',
-                            heading: 'AI Structural Pre-Check: COMPLIANT',
-                            subtext: 'All 9 criteria passed.'
-                        };
-                    }
-                    if (cv === 'NON_COMPLIANT' && wc === 'WORTH_CHECKING') {
-                        return {
-                            box: 'bg-amber-50 border border-amber-200',
-                            title: 'text-amber-800',
-                            body: 'text-amber-700',
-                            icon: '⚠️',
-                            heading: 'AI Structural Pre-Check: WORTH CHECKING',
-                            subtext: 'Some criteria need attention, but the submission demonstrates sufficient structural discipline for examiner review.'
-                        };
-                    }
-                    if (wc === 'NOT_WORTH_CHECKING') {
-                        return {
-                            box: 'bg-red-50 border border-red-200',
-                            title: 'text-red-800',
-                            body: 'text-red-700',
-                            icon: '❌',
-                            heading: 'AI Structural Pre-Check: STRUCTURAL ISSUES',
-                            subtext: 'The submission does not yet meet the structural threshold. Please review the scorecard on your GitHub issue and consider revising.'
-                        };
-                    }
-                    return {
-                        box: 'bg-gray-50 border border-gray-200',
-                        title: 'text-gray-800',
-                        body: 'text-gray-700',
-                        icon: 'ℹ️',
-                        heading: 'AI Structural Pre-Check: UNAVAILABLE',
-                        subtext: 'The automated check could not be completed. Your submission will proceed to manual review.'
-                    };
                 },
 
                 async submitForm() {

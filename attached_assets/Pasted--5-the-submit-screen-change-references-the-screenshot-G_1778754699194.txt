@@ -1,0 +1,188 @@
+§5 (the submit screen change) references "the screenshot Geoff referenced from issue #27 testing" — That is the screenshot attached.
+
+PHASE 6d — Binary Compliance Rework
+Context for Builder
+This is Phase 6d. The current system (post-6c) produces structurally correct verdicts using a four-state grading scale (PASS / CONDITIONAL_PASS / CONDITIONAL_FAIL / FAIL) and dual overall verdicts (Compliance + Worth Checking).
+Analysis of Geoffrey Thwaites' actual manual review process — using his ChatGPT verdicts on two known submissions (Cross-Domain 72-12-4-7 and Polarity & Oscillation, original + revised) — shows that:
+1. Geoff's actual gate is binary. He uses only PASS COMPLIANCE and NON-COMPLIANT. The four-state scale was an overengineered inference on our side.
+2. There is no "Worth Checking" layer in Geoff's workflow. Every submission gets a single overall verdict + a fix list when non-compliant.
+3. Geoff's reviews end every NON-COMPLIANT criterion with a "Required Correction Path" — a prescriptive instruction telling the submitter what to add. The current Grok output is diagnostic ("X is lacking") but not prescriptive ("Add a section titled Y with these elements"). This is the feature gap.
+4. Geoff's criterion names are slightly looser than our v4 spec. Specifically, "Causal Mechanism" → "Mechanism", "Empirical Test Path" → "Test Path", "Defined Terms and Ontology" → "Defined Terms", "Clear Singular Claim" → "Clear Core Claim". The v4 wording was stricter than Geoff's actual bar.
+This phase is a backend prompt-and-format change plus a small frontend change. No new dependencies. No pipeline changes. PDF extraction stays text-only (vision is Phase 6e, separate).
+Out of scope: Email notifications, vision/multimodal upgrade, examiner workflow, form fields, PDF upload pipeline. None of these change.
+
+1. Replace the Grok Criteria Descriptions
+In the user prompt template in server.py, replace the existing 9-criterion list with the following. Match the names and wording exactly — these reflect Geoff's actual usage and bar.
+Replace the entire criteria description block with:
+
+
+EVALUATE AGAINST THESE 9 CRITERIA, using BINARY status only: PASS or NON_COMPLIANT.
+
+1. CLEAR CORE CLAIM — Is there an identifiable, consistent central proposition? The claim should be stated clearly enough that a reader can identify what the manuscript is asserting. It does not need to be reducible to a single sentence — coherent restatements across the document are acceptable. PASS if a clear central claim is identifiable. NON_COMPLIANT if the claim is incoherent, contradictory across sections, or cannot be extracted.
+
+2. DEFINED TERMS — Are the key technical terms operationally defined and consistently applied? Definitions can be in a glossary, a definitions section, or inline at first use. PASS if the primary technical vocabulary is defined and used consistently. NON_COMPLIANT if core terms are undefined, used inconsistently, or rely on metaphor without operational grounding.
+
+3. MECHANISM — Is there a coherent mechanism pathway that explains how the claim leads to its consequences? The mechanism can be conceptual rather than formally axiomatized — what matters is that a generative sequence exists (e.g., "polarity → distinction → relation → order → number → operations"). PASS if a coherent mechanism pathway is present, even if conceptual. NON_COMPLIANT if no mechanism is offered, or if the paper explicitly disclaims any generative/causal pathway.
+
+4. TEST PATH — Does the manuscript provide at least one explicit testable procedure? Tests can be experimental, computational, mathematical, or observational. Each test must include: (a) a prediction or expected outcome, (b) a procedure for evaluating it, and (c) a condition under which the test would fail. PASS if at least one testable procedure meeting all three elements is present. NON_COMPLIANT if "tests" consist only of compatibility observations, interpretive mappings, or historical equation surveys with no failure condition.
+
+5. FALSIFIABILITY — Does the manuscript contain explicit falsifiers — conditions under which the claim or framework would be rejected? Falsifiers should be identifiable failure conditions (e.g., "discovery of a fundamental equation lacking frequency-mode representation"). They do not need to be expressed as binary numerical thresholds. PASS if at least one identifiable falsifier is stated. NON_COMPLIANT if the framework can absorb any contradictory observation through reinterpretation, or if no failure conditions are stated.
+
+6. DEPENDENCY TRANSPARENCY — Does the author explicitly acknowledge assumptions, conceptual scope, limitations, and what the framework does not claim? PASS if a dedicated limitations/scope/assumptions section is present, or if these acknowledgments are clearly distributed and identifiable. NON_COMPLIANT if assumptions are hidden, unstated, or the manuscript overreaches its own scope.
+
+7. NON-ARBITRARY SELECTION — Is the selection of primitives, categories, or analytical units justified? The manuscript should explain why these specific elements were chosen and why alternatives were rejected or considered. PASS if a justification section or argument is present (e.g., a "Why these primitives?" section comparing alternatives). NON_COMPLIANT if selection is post-hoc or unjustified.
+
+8. PREDICTIVE CAPABILITY — Does the manuscript produce at least one measurable prediction, scaling relation, or numerical consequence derived from the framework? Predictions can be quantitative scaling relations, numerical values, observational signatures, or model-specific expected outcomes. PASS if at least one explicit prediction is derivable from the framework. NON_COMPLIANT if the manuscript only re-describes or re-interprets existing data without generating new predictions.
+
+9. REPRODUCIBILITY — Could an independent reviewer reproduce the analysis using the methodology, sources, and procedures described? PASS if the logical framework, cited equations, and procedures are independently traceable. NON_COMPLIANT if the methodology cannot be replicated from the manuscript alone.
+
+2. Replace the Response Format
+In the same user prompt, replace the existing JSON response format with:
+
+
+For each criterion, return:
+- status: either "PASS" or "NON_COMPLIANT" (binary only — no conditional states)
+- reason: one short paragraph (1-3 sentences) describing what is present or absent in the PDF that supports this verdict. Cite specific sections, figures, or terms where possible.
+- required_correction: ONLY populated when status is NON_COMPLIANT. This must be a PRESCRIPTIVE INSTRUCTION telling the submitter what to add, not a diagnostic description of the gap. Use Geoff's voice:
+  - Start with a concrete action: "Add a dedicated section titled X" or "Provide at least one Y" or "Justify the selection of Z by..."
+  - Include 2-4 bulleted examples of what the corrected content might look like
+  - End with a clear quality bar: "These must include a prediction, procedure, and failure condition" or similar
+  - Set required_correction to null when status is PASS
+
+CRITICAL: The required_correction is the submitter's repair instruction. They should be able to action it directly. Do NOT write generic feedback like "consider improving X" — write specific instructions like "Add a section titled 'Potential Falsifiers' listing at least three failure conditions. Examples may include: (a) discovery of foundational equations irreducible to oscillatory representation, (b) proof that polarity cannot generate required mathematical structures, (c) observational evidence incompatible with the proposed frequency hierarchy."
+
+Compute one overall verdict:
+
+OVERALL_STATUS:
+- "COMPLIANT" if ALL 9 criteria are PASS
+- "NON_COMPLIANT" if any criterion is NON_COMPLIANT
+
+Also produce minimum_corrections — an ordered list of the required corrections from the NON_COMPLIANT criteria, in criterion order. This is empty when overall_status is COMPLIANT.
+
+Respond in this exact JSON format only — no markdown, no preamble, no trailing text:
+
+{
+  "criteria": [
+    {"id": 1, "name": "Clear Core Claim", "status": "PASS|NON_COMPLIANT", "reason": "...", "required_correction": "..." or null},
+    {"id": 2, "name": "Defined Terms", "status": "PASS|NON_COMPLIANT", "reason": "...", "required_correction": "..." or null},
+    {"id": 3, "name": "Mechanism", "status": "PASS|NON_COMPLIANT", "reason": "...", "required_correction": "..." or null},
+    {"id": 4, "name": "Test Path", "status": "PASS|NON_COMPLIANT", "reason": "...", "required_correction": "..." or null},
+    {"id": 5, "name": "Falsifiability", "status": "PASS|NON_COMPLIANT", "reason": "...", "required_correction": "..." or null},
+    {"id": 6, "name": "Dependency Transparency", "status": "PASS|NON_COMPLIANT", "reason": "...", "required_correction": "..." or null},
+    {"id": 7, "name": "Non-Arbitrary Selection", "status": "PASS|NON_COMPLIANT", "reason": "...", "required_correction": "..." or null},
+    {"id": 8, "name": "Predictive Capability", "status": "PASS|NON_COMPLIANT", "reason": "...", "required_correction": "..." or null},
+    {"id": 9, "name": "Reproducibility", "status": "PASS|NON_COMPLIANT", "reason": "...", "required_correction": "..." or null}
+  ],
+  "overall_status": "COMPLIANT|NON_COMPLIANT",
+  "minimum_corrections": ["...", "..."],
+  "summary": "One short paragraph (2-4 sentences) summarizing the submission's structural standing. If COMPLIANT, state that all 9 criteria are met and note any recommended improvements. If NON_COMPLIANT, state which criteria failed and reference the minimum corrections list."
+}
+
+3. Remove Worth Checking Logic
+The worth_checking_verdict field is removed entirely from this phase.
+* Remove all references to worth_checking_verdict from the prompt
+* Remove the worth-checking calculation logic from server.py
+* Remove the AI Pre-Check: Worth Checking and AI Pre-Check: Structural Issues GitHub labels from the auto-labelling logic
+* Replace the labelling logic with:
+    * If overall_status == COMPLIANT: apply label AI Pre-Check: Compliant
+    * If overall_status == NON_COMPLIANT: apply label AI Pre-Check: Non-Compliant
+    * Always apply: Pending Review
+
+4. Update the GitHub Issue Format
+Replace the current scorecard markdown template with:
+
+
+markdown
+---
+
+### AI Structural Pre-Check (9-Criteria Scorecard, PDF-grounded)
+> **This is an automated structural screening, not a scientific evaluation.**
+> The AI pre-check evaluates structure, not scientific truth.
+> A submission that contradicts TSM2 can still pass; a submission that agrees with TSM2 can still fail.
+> Final compliance determination is made by a qualified examiner.
+
+**Overall Status:** {overall_status}
+
+| # | Criterion | Status | Reason |
+| --- | --- | --- | --- |
+| 1 | Clear Core Claim | {status} | {reason} |
+| 2 | Defined Terms | {status} | {reason} |
+| 3 | Mechanism | {status} | {reason} |
+| 4 | Test Path | {status} | {reason} |
+| 5 | Falsifiability | {status} | {reason} |
+| 6 | Dependency Transparency | {status} | {reason} |
+| 7 | Non-Arbitrary Selection | {status} | {reason} |
+| 8 | Predictive Capability | {status} | {reason} |
+| 9 | Reproducibility | {status} | {reason} |
+
+**Summary:** {summary}
+If overall_status is NON_COMPLIANT, append the following section after the summary:
+
+
+markdown
+---
+
+### Minimum Corrections Required for Compliance
+
+The following corrections must be addressed for this submission to meet structural compliance. Each criterion below failed; the prescribed correction is shown.
+
+{for each NON_COMPLIANT criterion in order:}
+
+**{criterion_number}. {criterion_name}**
+
+{required_correction}
+
+{end for}
+
+Once these corrections are addressed, the submission may be revised and re-submitted for re-evaluation.
+Status rendering in the table:
+Internal value	Display
+PASS	✅ Pass
+NON_COMPLIANT	❌ Non-Compliant
+5. Update the Submit Screen (Frontend Change)
+Locate the submission confirmation page (the page shown after a successful submission, currently displays the AI verdict box and the "View Issue on GitHub" button — visible in the screenshot Geoff referenced from issue #27 testing).
+Remove from the confirmation page:
+* The entire AI verdict box (the amber "AI Structural Pre-Check: WORTH CHECKING" panel with the inline summary text and disclaimer footer)
+* Any reference to the AI pre-check verdict at the submit-screen level
+Keep on the confirmation page:
+* The green tick / "Submission Received" header
+* The "View Issue on GitHub" button — but rename the button label to: "View your submission reference"
+* The "Your personal details have been sent privately to the Institute Director (not public)" privacy note
+Replace the page body text with:
+
+
+Submission Received
+
+Your submission has been received. A reference has been created for your records.
+The Institute will review your submission and be in touch.
+
+Your personal details have been sent privately to the Institute Director (not public).
+Then the "View your submission reference" button below.
+Behaviour note: The GitHub issue itself still contains the full scorecard (per §4). Submitters who click through to GitHub will see the AI pre-check verdict in the issue body, with its existing disclaimer. This is intentional — the GitHub issue is the canonical, transparent record. The submit-screen change is about removing inline verdict noise at submission time, not hiding the verdict from the submitter.
+
+6. Update Documentation
+After §1–§5 are complete and verified, update the following docs to reflect the binary model:
+* README.md — Update any references to the four-state scale, Worth Checking verdict, or v4 criterion names. Confirm the documented behaviour matches what's now implemented.
+* replit.md — Same. The implementation docs should reflect Phase 6d, not the pre-6d state.
+Specifically search for and update these terms wherever they appear:
+Find	Replace with
+CONDITIONAL_PASS / CONDITIONAL_FAIL	(remove — binary only)
+Worth Checking	(remove — verdict no longer exists)
+Clear Singular Claim	Clear Core Claim
+Defined Terms and Ontology	Defined Terms
+Causal Mechanism	Mechanism
+Empirical Test Path	Test Path
+worth_checking_verdict	(remove — field no longer exists)
+compliance_verdict	overall_status
+Don't leave the docs in a state that contradicts the code. Geoff has been clear that documentation drift is a real cost.
+
+7. What NOT To Change
+* Do NOT change the system message (still anchors Grok as a structural compliance screener)
+* Do NOT change the PDF text extraction step (still text-only via pdfplumber — vision is Phase 6e)
+* Do NOT change the form fields, declaration checkboxes, or self-certification fields
+* Do NOT change the PDF upload pipeline
+* Do NOT change the email notification to the Director
+* Do NOT change the API endpoint path or method
+* Do NOT change examiner workflow or examiner-applied labels (Compliant, Non-Compliant, Returned for Clarification remain as manual examiner labels, independent of the AI pre-check labels)
+* Do NOT add a "priority" or "high-value" flag based on criterion counts — that's an email-layer concern for a future phase
+* Do NOT modify any other criterion descriptions beyond the 9 in §1
