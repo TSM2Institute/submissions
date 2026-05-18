@@ -12,6 +12,7 @@ import uuid
 import cgi
 import io
 import time
+import base64
 import replitmail
 
 try:
@@ -20,6 +21,55 @@ try:
 except ImportError:
     PDFPLUMBER_AVAILABLE = False
     print("[STARTUP] pdfplumber not installed; PDF text extraction will be disabled.", file=sys.stderr)
+
+try:
+    import pymupdf
+    PYMUPDF_AVAILABLE = True
+except ImportError:
+    PYMUPDF_AVAILABLE = False
+    print("[STARTUP] pymupdf not installed; PDF page-to-image rendering will be disabled.", file=sys.stderr)
+
+
+def render_pdf_pages_to_images(pdf_path, max_pages=50, dpi=200):
+    """Render each page of a PDF to a PNG image and return as base64 data URIs.
+
+    Returns a dict:
+        {
+          "images": [{"type": "image_url", "image_url": {"url": "data:image/png;base64,..."}}, ...],
+          "total_pages": int,
+          "rendered_pages": int,
+          "truncated": bool,
+          "error": Optional[str],
+        }
+    On failure, returns a dict with empty images and an "error" message.
+    """
+    if not PYMUPDF_AVAILABLE:
+        return {"images": [], "total_pages": 0, "rendered_pages": 0, "truncated": False, "error": "pymupdf unavailable"}
+    try:
+        doc = pymupdf.open(pdf_path)
+        total_pages = len(doc)
+        pages_to_render = min(total_pages, max_pages)
+        images = []
+        for page_num in range(pages_to_render):
+            page = doc[page_num]
+            pix = page.get_pixmap(dpi=dpi)
+            png_bytes = pix.tobytes("png")
+            b64 = base64.b64encode(png_bytes).decode("ascii")
+            images.append({
+                "type": "image_url",
+                "image_url": {"url": f"data:image/png;base64,{b64}"},
+            })
+        doc.close()
+        return {
+            "images": images,
+            "total_pages": total_pages,
+            "rendered_pages": pages_to_render,
+            "truncated": total_pages > max_pages,
+            "error": None,
+        }
+    except Exception as e:
+        print(f"[PDF RENDER] Failed to render PDF: {e}", file=sys.stderr)
+        return {"images": [], "total_pages": 0, "rendered_pages": 0, "truncated": False, "error": str(e)}
 
 
 STATUS_DISPLAY = {
@@ -226,12 +276,20 @@ class RequestHandler(SimpleHTTPRequestHandler):
         else:
             print(f"[PDF EXTRACTION] {pdf_page_count} pages, {len(pdf_text)} chars, truncated={pdf_truncated}", file=sys.stderr)
 
+        # Render PDF pages to images for multimodal vision analysis
+        render_result = render_pdf_pages_to_images(pdf_path)
+        if render_result.get("error"):
+            print(f"[PDF RENDER] Vision unavailable: {render_result['error']}", file=sys.stderr)
+        else:
+            print(f"[PDF RENDER] Rendered {render_result['rendered_pages']}/{render_result['total_pages']} pages at 200 DPI", file=sys.stderr)
+
         compliance_result = None
         if form_data:
             compliance_result = self.check_compliance_with_grok(
                 form_data,
                 pdf_text=pdf_text,
                 pdf_extraction_failed=pdf_extraction_failed,
+                render_result=render_result,
             )
 
         if pdf_url:
@@ -252,6 +310,16 @@ class RequestHandler(SimpleHTTPRequestHandler):
                     extraction_note = "\n> ⚠️ Note: PDF text extraction failed. The AI assessment is based on form-field metadata only, with reduced confidence.\n"
                 elif pdf_truncated:
                     extraction_note = f"\n> ⚠️ Note: The PDF text was truncated at approximately 60,000 characters ({pdf_page_count} pages total). The AI assessment is based on the content up to the truncation point.\n"
+
+                if render_result.get("error") or not render_result.get("images"):
+                    extraction_note += "\n> ⚠️ **Visual analysis unavailable for this submission.** The PDF could not be rendered to images. The pre-check assessment is based on extracted text only.\n"
+                else:
+                    rp = render_result['rendered_pages']
+                    tp = render_result['total_pages']
+                    vis_note = f"\n> 🔬 **Visual analysis:** {rp} of {tp} pages rendered to images at 200 DPI and analyzed alongside extracted text."
+                    if render_result.get("truncated"):
+                        vis_note += f" Pages beyond page {rp} were not rendered visually but their text was still extracted."
+                    extraction_note += vis_note + "\n"
 
                 if is_error or overall_status == "UNAVAILABLE":
                     compliance_section = f"""
@@ -378,7 +446,7 @@ Once these corrections are addressed, the submission may be revised and re-submi
         else:
             self.send_json_response(result.get('code', 500), {'error': result.get('error')})
     
-    def check_compliance_with_grok(self, form_data, pdf_text=None, pdf_extraction_failed=False):
+    def check_compliance_with_grok(self, form_data, pdf_text=None, pdf_extraction_failed=False, render_result=None):
         grok_api_key = os.environ.get('GROK_API_KEY')
         if not grok_api_key:
             print("GROK_API_KEY not configured, skipping compliance check", file=sys.stderr)
@@ -401,6 +469,13 @@ Once these corrections are addressed, the submission may be revised and re-submi
                 pdf_section = "[PDF text could not be extracted. Assess based on the metadata fields above only. Note in your summary that the assessment is limited to form fields due to PDF extraction failure.]"
             else:
                 pdf_section = pdf_text
+
+            render_result = render_result or {"images": [], "total_pages": 0, "rendered_pages": 0, "truncated": False, "error": "no render"}
+            vision_images = render_result.get("images", [])
+            vision_truncated = render_result.get("truncated", False)
+            vision_total = render_result.get("total_pages", 0)
+            vision_rendered = render_result.get("rendered_pages", 0)
+            vision_error = render_result.get("error")
 
             prompt = f"""You are screening a submission to the TSM2 Institute for Cosmology against 9 structural criteria. Evaluate structure, methodology, and epistemic discipline only — do NOT judge scientific merit, correctness, or alignment with any framework.
 
@@ -474,14 +549,32 @@ Respond in this exact JSON format only — no markdown, no preamble, no trailing
   "summary": "One short paragraph (2-4 sentences) summarizing the submission's structural standing. If COMPLIANT, state that all 9 criteria are met and note any recommended improvements. If NON_COMPLIANT, state which criteria failed and reference the minimum corrections list."
 }}"""
 
+            user_prompt_text = prompt
+            if vision_images and vision_truncated:
+                truncation_note = (
+                    f"NOTE: This PDF has {vision_total} pages. "
+                    f"Only the first {vision_rendered} pages have been "
+                    f"rendered as images for visual analysis. The text extraction "
+                    f"covers the full document."
+                )
+                user_prompt_text = truncation_note + "\n\n" + user_prompt_text
+
+            if vision_images:
+                user_content = list(vision_images)
+                user_content.append({"type": "text", "text": user_prompt_text})
+                model_name = "grok-4"
+            else:
+                user_content = user_prompt_text
+                model_name = "grok-3-mini"
+
             request_data = {
-                "model": "grok-3-mini",
+                "model": model_name,
                 "messages": [
                     {"role": "system", "content": "You are a structural compliance screener for the TSM2 Institute for Cosmology. Your task is to assess scientific submissions against 9 structural criteria covering claim clarity, mechanism, falsifiability, methodology, predictive capability, and reproducibility. You assess structure and methodological discipline, not scientific truth, and not agreement with any particular theoretical framework. A submission can be excellent structurally while contradicting TSM2, or be aligned with TSM2 while failing structurally. Judge structure only. Respond only with valid JSON in the schema specified."},
-                    {"role": "user", "content": prompt},
+                    {"role": "user", "content": user_content},
                 ],
                 "temperature": 0.3,
-                "max_tokens": 2000,
+                "max_tokens": 4000,
             }
 
             req = urllib.request.Request(
@@ -496,12 +589,12 @@ Respond in this exact JSON format only — no markdown, no preamble, no trailing
             )
 
             start_time = time.time()
-            with urllib.request.urlopen(req, timeout=60) as response:
+            with urllib.request.urlopen(req, timeout=300) as response:
                 elapsed = time.time() - start_time
                 result = json.loads(response.read().decode('utf-8'))
                 content = result.get('choices', [{}])[0].get('message', {}).get('content', '')
                 pdf_chars = len(pdf_section) if pdf_section else 0
-                print(f"[GROK] Response time: {elapsed:.1f}s, PDF chars: {pdf_chars}", file=sys.stderr)
+                print(f"[GROK] Model: {model_name}, Response time: {elapsed:.1f}s, PDF chars: {pdf_chars}, Vision images: {len(vision_images)} (truncated={vision_truncated}, error={vision_error})", file=sys.stderr)
 
                 content = content.strip()
                 if content.startswith('```json'):

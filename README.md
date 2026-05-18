@@ -38,7 +38,7 @@ A web-based submission portal for the TSM2 Institute for Cosmology. Scientists a
 
 ## AI Structural Pre-Check
 
-The system uses Grok AI (via the xAI API) to perform an automated structural screening before the submission is logged. The AI evaluates 9 criteria:
+The AI pre-check uses Grok in multimodal mode, analyzing both extracted text (via `pdfplumber`) and rendered page images (via PyMuPDF, 200 DPI PNG, up to 50 pages per submission). This allows assessment of figures, diagrams, and equations that text extraction alone cannot capture. The AI evaluates 9 criteria:
 
 | # | Criterion | Assessment Method |
 |---|-----------|-------------------|
@@ -132,7 +132,8 @@ Each submission creates a GitHub Issue in the `TSM2Institute/submissions` reposi
 |-----------|-----------|
 | **Frontend** | Static HTML, Tailwind CSS (CDN), Alpine.js (CDN) |
 | **Backend** | Python 3.11 (`http.server`) |
-| **AI** | Grok API (xAI) via `grok-3-mini` model |
+| **AI** | Grok API (xAI) — `grok-4` multimodal when page images are rendered; `grok-3-mini` text-only fallback |
+| **PDF Vision** | PyMuPDF (200 DPI PNG render, up to 50 pages); AGPL-licensed, acceptable for non-commercial Institute use |
 | **Issue Tracking** | GitHub Issues API |
 | **Email** | Replit Mail (internal service) |
 | **PDF Storage** | Local `/uploads/` directory with public URLs |

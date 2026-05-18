@@ -52,7 +52,8 @@ Preferred communication style: Simple, everyday language.
 - **API Endpoint**: `/api/submit` handles POST multipart/form-data submissions
 - **PDF Storage**: Local `/uploads/` folder with public URLs
 - **PDF Validation**: Extension check, magic bytes verification, 100MB size limit, filename sanitization
-- **AI Integration**: Grok API (`grok-3-mini`) for 9-criteria structural compliance pre-checking (evaluates structure, not scientific truth)
+- **AI Integration**: Grok API (multimodal — `grok-4` when page images are available, falls back to `grok-3-mini` text-only) for 9-criteria structural compliance pre-checking (evaluates structure, not scientific truth)
+- **PDF Vision**: PyMuPDF renders each PDF page to a 200 DPI PNG, sent alongside the extracted text in the Grok call. Capped at 50 pages per submission; text extraction is unaffected by this cap. PyMuPDF is AGPL — acceptable for the Institute's non-commercial public-source use; reassess if the platform ever moves to commercial SaaS.
 - **GitHub Integration**: Creates Issues via GitHub API in `TSM2Institute/submissions`
 - **Email Integration**: Replit Mail sends submitter details privately to Institute Director
 
@@ -103,9 +104,10 @@ Overall outcomes: PASSED / NEEDS REVIEW / UNAVAILABLE
 - **GitHub API**: Creates issues for tracking submissions
   - Repository: `TSM2Institute/submissions`
   - Requires `GITHUB_PAT` environment variable
-- **Grok API**: AI compliance pre-checking
+- **Grok API**: AI compliance pre-checking (multimodal)
   - Endpoint: `https://api.x.ai/v1/chat/completions`
-  - Model: `grok-3-mini`
+  - Model: `grok-4` when page images are sent (default path), `grok-3-mini` fallback for text-only
+  - Multimodal payload: rendered PNG page images + extracted text + structural prompt
   - Requires `GROK_API_KEY` environment variable
   - Note: Requests must include a `User-Agent` header (Cloudflare blocks requests without one)
 - **Replit Mail**: Email notifications for submitter details
