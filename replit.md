@@ -29,7 +29,8 @@ Preferred communication style: Simple, everyday language.
 ├── index.html          # Frontend (single-page app with 6-step form)
 ├── start.sh            # Auto-restart wrapper for server.py
 ├── server.py           # Backend (Python HTTP server + API endpoint)
-├── replitmail.py       # Email notification utility (Replit Mail API)
+├── emailutil.py        # SMTP email utility (Institute mail server)
+├── replitmail.py       # Deprecated — retained for rollback only (not imported)
 ├── replit.md           # Replit-specific project documentation (this file)
 ├── README.md           # Full project documentation for Git
 ├── .gitignore          # Excludes uploads, cache, logs from Git
@@ -55,7 +56,7 @@ Preferred communication style: Simple, everyday language.
 - **AI Integration**: Grok API (multimodal — `grok-4` when page images are available, falls back to `grok-3-mini` text-only) for 9-criteria structural compliance pre-checking (evaluates structure, not scientific truth)
 - **PDF Vision**: PyMuPDF renders each PDF page to a 200 DPI PNG, sent alongside the extracted text in the Grok call. Capped at 50 pages per submission; text extraction is unaffected by this cap. PyMuPDF is AGPL — acceptable for the Institute's non-commercial public-source use; reassess if the platform ever moves to commercial SaaS.
 - **GitHub Integration**: Creates Issues via GitHub API in `TSM2Institute/submissions`
-- **Email Integration**: Replit Mail sends submitter details privately to Institute Director
+- **Email Integration**: SMTP via Institute mail server (`smtp.hostedemail.com:587`, TLS) — sends two emails per submission: (1) submitter confirmation with AI verdict to the submitter's address, and (2) examiner notification with private submitter details to `info@tsm2.org`. Implemented in `emailutil.py`.
 
 ### Form Structure (6 Steps)
 1. **Your Information** - Name, Email, Organization (private, not in GitHub issue)
@@ -90,7 +91,9 @@ Overall outcomes: PASSED / NEEDS REVIEW / UNAVAILABLE
 8. AI scorecard (PASSED/NEEDS REVIEW/UNAVAILABLE) included in issue
 9. GitHub labels auto-applied (Pending Review + screening result)
 10. Email notification sent to Institute Director with private submitter details
-11. Submitter email content built and logged server-side (external email delivery pending — Replit Mail is limited to verified internal address; external SMTP service TBD)
+11. Submitter confirmation email sent via SMTP from `info@tsm2.org` to the submitter's address (verdict-specific template: COMPLIANT / NON-COMPLIANT with corrections / UNAVAILABLE)
+12. Examiner notification email sent via SMTP from `info@tsm2.org` to `info@tsm2.org` with private submitter details (name, email, organization, phone, website) and AI verdict summary
+13. Email failures are logged but never block the submission — the GitHub issue is the authoritative record
 
 ### Static File Serving
 - The Python server doubles as a static file server for the HTML frontend
@@ -110,10 +113,13 @@ Overall outcomes: PASSED / NEEDS REVIEW / UNAVAILABLE
   - Multimodal payload: rendered PNG page images + extracted text + structural prompt
   - Requires `GROK_API_KEY` environment variable
   - Note: Requests must include a `User-Agent` header (Cloudflare blocks requests without one)
-- **Replit Mail**: Email notifications for submitter details
-  - Sends to Institute Director's verified Replit email
-  - Uses internal Replit authentication (no API key needed)
-  - Implemented in `replitmail.py`
+- **Institute SMTP**: Email notifications (submitter + examiner)
+  - Server: `smtp.hostedemail.com` port `587` (STARTTLS)
+  - Auth user: `info@tsm2.org`
+  - Password supplied via `TSM2_INFO_EMAIL` secret
+  - Implemented in `emailutil.py` (uses Python stdlib `smtplib` + `email.mime`)
+  - Fire-and-forget background thread; failures are logged but never block a submission
+  - Replit Mail is no longer used (kept on disk for rollback)
 
 ### CDN Dependencies
 - **Tailwind CSS**: `https://cdn.tailwindcss.com`
@@ -126,6 +132,7 @@ Overall outcomes: PASSED / NEEDS REVIEW / UNAVAILABLE
 |----------|---------|
 | `GITHUB_PAT` | GitHub Personal Access Token for creating issues |
 | `GROK_API_KEY` | Grok API key for AI compliance checking |
+| `TSM2_INFO_EMAIL` | Password for `info@tsm2.org` — used for SMTP submitter + examiner emails |
 
 ## Deployment
 

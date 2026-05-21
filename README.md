@@ -114,7 +114,8 @@ Each submission creates a GitHub Issue in the `TSM2Institute/submissions` reposi
 ├── index.html          # Frontend (single-page app with 6-step form)
 ├── start.sh            # Auto-restart wrapper for server.py
 ├── server.py           # Backend (Python HTTP server + API)
-├── replitmail.py       # Email notification utility (Replit Mail integration)
+├── emailutil.py        # SMTP email utility (Institute mail server)
+├── replitmail.py       # Deprecated — retained for rollback only (not imported)
 ├── replit.md           # Replit-specific project documentation
 ├── README.md           # This file
 ├── .gitignore          # Excludes uploads, cache, logs from Git
@@ -135,7 +136,7 @@ Each submission creates a GitHub Issue in the `TSM2Institute/submissions` reposi
 | **AI** | Grok API (xAI) — `grok-4` multimodal when page images are rendered; `grok-3-mini` text-only fallback |
 | **PDF Vision** | PyMuPDF (200 DPI PNG render, up to 50 pages); AGPL-licensed, acceptable for non-commercial Institute use |
 | **Issue Tracking** | GitHub Issues API |
-| **Email** | Replit Mail (internal service) |
+| **Email** | SMTP via `smtp.hostedemail.com` (TLS, port 587), authenticated as `info@tsm2.org`; uses Python stdlib `smtplib` |
 | **PDF Storage** | Local `/uploads/` directory with public URLs |
 | **Hosting** | Replit (autoscale deployment) |
 | **Font** | Inter (Google Fonts) |

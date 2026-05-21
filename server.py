@@ -13,7 +13,7 @@ import cgi
 import io
 import time
 import base64
-import replitmail
+import emailutil
 
 try:
     import pdfplumber
@@ -401,8 +401,8 @@ Once these corrections are addressed, the submission may be revised and re-submi
             issue_url = result.get('html_url')
             
             self.apply_github_labels(issue_number, compliance_result)
-            self.send_examiner_notification(user_info, title, issue_url, issue_number)
-            self.send_submitter_email(user_info, form_data, issue_number, compliance_result)
+            self.send_examiner_notification(user_info, form_data, title, issue_url, issue_number, compliance_result)
+            self.send_submitter_email(user_info, form_data, issue_number, issue_url, compliance_result)
             
             response_data = {
                 'success': True,
@@ -704,98 +704,92 @@ Respond in this exact JSON format only — no markdown, no preamble, no trailing
         t = threading.Thread(target=_apply, daemon=True)
         t.start()
     
-    def send_examiner_notification(self, user_info, title, issue_url, issue_number):
-        import threading
-        
-        def _send():
-            try:
-                name = user_info.get('name', 'Not provided')
-                email = user_info.get('email', 'Not provided')
-                organization = user_info.get('organization', 'Not provided')
-                
-                email_subject = f"TSM2 Submission #{issue_number}: {title}"
-                
-                email_body = f"""New TSM2 Submission Received
+    def send_examiner_notification(self, user_info, form_data, title, issue_url, issue_number, compliance_result):
+        try:
+            name = user_info.get('name', 'Not provided')
+            email = user_info.get('email', 'Not provided')
+            organization = user_info.get('organization', 'Not provided')
+            phone = user_info.get('phone', 'Not provided')
+            website = user_info.get('website', 'Not provided')
 
-Submitter Details (Private):
-- Name: {name}
-- Email: {email}
-- Organization: {organization}
+            primary_scale = form_data.get('primary_scale', 'Not specified')
+            core_claim = form_data.get('core_claim', 'Not provided')
 
-Submission:
-- Title: {title}
-- Issue #: {issue_number}
-- GitHub URL: {issue_url}
+            overall_status = (compliance_result or {}).get('overall_status', 'UNAVAILABLE')
+            summary = (compliance_result or {}).get('summary', 'No AI summary available.')
+            criteria = (compliance_result or {}).get('criteria', []) if compliance_result else []
 
-This information was kept private and is not visible on the public GitHub issue."""
-                
-                result = replitmail.send_email(email_subject, text=email_body)
-                
-                if result.get('success'):
-                    print(f"Examiner email notification sent successfully", file=sys.stderr)
-                else:
-                    print(f"Examiner email notification failed: {result.get('error')}", file=sys.stderr)
-                    
-            except Exception as e:
-                print(f"Examiner email notification error: {str(e)}", file=sys.stderr)
-        
-        t = threading.Thread(target=_send, daemon=True)
-        t.start()
-    
-    def send_submitter_email(self, user_info, form_data, issue_number, compliance_result):
-        import threading
-        from datetime import datetime
-        
-        def _send():
-            try:
-                submitter_name = user_info.get('name', 'Submitter')
-                submitter_email = user_info.get('email', '')
-                if not submitter_email:
-                    print("No submitter email provided, skipping submitter notification", file=sys.stderr)
-                    return
-                
-                submission_title = form_data.get('submission_title', 'Untitled')
-                primary_scale = form_data.get('primary_scale', 'Not specified')
-                date_str = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
-                
-                overall_status = compliance_result.get('overall_status', 'UNAVAILABLE') if compliance_result else 'UNAVAILABLE'
-                criteria = compliance_result.get('criteria', []) if compliance_result else []
+            failed_section = ""
+            if overall_status == "NON_COMPLIANT":
+                lines = []
+                for c in criteria:
+                    if c.get('status') == 'NON_COMPLIANT':
+                        cname = c.get('name') or f"Criterion {c.get('id', '?')}"
+                        creason = c.get('reason', 'No details')
+                        lines.append(f"- {cname}: {creason}")
+                if lines:
+                    failed_section = "Failed criteria:\n" + "\n".join(lines) + "\n\n"
 
-                def _failed_items():
-                    items = ""
-                    for c in criteria:
-                        if c.get('status', '') == 'NON_COMPLIANT':
-                            items += f"- Criterion {c.get('id', '?')} ({c.get('name', 'Unknown')}): {c.get('reason', 'No details')}\n"
-                    return items.rstrip() if items else "- Details unavailable"
+            email_subject = f"[TSM2-SUB] New Submission: {title} — {overall_status}"
 
-                if overall_status == "COMPLIANT":
-                    screening_section = """AI STRUCTURAL PRE-CHECK:
-- Overall Status: COMPLIANT
+            email_body = f"""New submission received.
 
-All 9 structural criteria passed."""
-                elif overall_status == "NON_COMPLIANT":
-                    screening_section = f"""AI STRUCTURAL PRE-CHECK:
-- Overall Status: NON-COMPLIANT
-
-The automated screening identified the following criteria as non-compliant:
-
-{_failed_items()}
-
-Please review the full scorecard and prescribed corrections on your GitHub issue."""
-                else:
-                    screening_section = """AI STRUCTURAL PRE-CHECK: UNAVAILABLE
-The automated screening could not be completed at this time. This does not affect your submission - it will proceed directly to examiner review."""
-                
-                email_body = f"""Dear {submitter_name},
-
-Your submission "{submission_title}" has been received by the TSM2 Institute for Cosmology.
-
-SUBMISSION REFERENCE
-GitHub Issue: #{issue_number}
-Submitted: {date_str}
+SUBMISSION DETAILS
+Title: {title}
 Primary Scale: {primary_scale}
+Core Claim: {core_claim}
+GitHub Issue: #{issue_number} — {issue_url}
 
-{screening_section}
+SUBMITTER DETAILS (PRIVATE)
+Name: {name}
+Email: {email}
+Organization: {organization}
+Phone: {phone}
+Website: {website}
+
+AI PRE-CHECK RESULT: {overall_status}
+
+{failed_section}Summary: {summary}
+
+View full issue: {issue_url}
+"""
+
+            emailutil.send_email_async(
+                to_address="info@tsm2.org",
+                subject=email_subject,
+                body_text=email_body,
+            )
+        except Exception as e:
+            print(f"Examiner email notification error: {str(e)}", file=sys.stderr)
+    
+    def send_submitter_email(self, user_info, form_data, issue_number, issue_url, compliance_result):
+        from datetime import datetime
+
+        try:
+            submitter_name = user_info.get('name', 'Submitter')
+            submitter_email = user_info.get('email', '')
+            if not submitter_email:
+                print("No submitter email provided, skipping submitter notification", file=sys.stderr)
+                return
+
+            submission_title = form_data.get('submission_title', 'Untitled')
+            primary_scale = form_data.get('primary_scale', 'Not specified')
+            date_str = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
+
+            overall_status = (compliance_result or {}).get('overall_status', 'UNAVAILABLE')
+            criteria = (compliance_result or {}).get('criteria', []) if compliance_result else []
+
+            reference_block = f"""SUBMISSION REFERENCE
+GitHub Issue: #{issue_number}
+Title: {submission_title}
+Primary Scale: {primary_scale}
+Date: {date_str}"""
+
+            if overall_status == "COMPLIANT":
+                middle_section = f"""{reference_block}
+
+AI STRUCTURAL PRE-CHECK: COMPLIANT
+All 9 structural criteria were met.
 
 Please note:
 - This is an automated structural screening, not a scientific evaluation.
@@ -803,25 +797,73 @@ Please note:
 - Structural compliance does not constitute scientific validation or endorsement.
 - You will be contacted if any further information is required.
 
+You can view your submission at:
+{issue_url}"""
+
+            elif overall_status == "NON_COMPLIANT":
+                failed_lines = []
+                corrections = []
+                for c in criteria:
+                    if c.get('status') == 'NON_COMPLIANT':
+                        name = c.get('name', f"Criterion {c.get('id', '?')}")
+                        reason = c.get('reason', 'No details')
+                        correction = c.get('required_correction') or 'See GitHub issue for the full prescribed correction.'
+                        failed_lines.append(f"- {name}: {reason}\n  Correction required: {correction}")
+                        corrections.append(f"- {correction}")
+                failed_text = "\n".join(failed_lines) if failed_lines else "- Details unavailable. See the GitHub issue for the full scorecard."
+                corrections_text = "\n".join(corrections) if corrections else "- See the GitHub issue for the full list of corrections."
+
+                middle_section = f"""{reference_block}
+
+AI STRUCTURAL PRE-CHECK: NON-COMPLIANT
+The automated screening identified structural gaps in the following criteria:
+
+{failed_text}
+
+MINIMUM CORRECTIONS REQUIRED
+{corrections_text}
+
+Please note:
+- This is an automated structural screening, not a scientific evaluation.
+- Your submission will still proceed to examiner review.
+- The corrections listed above are structural requirements, not judgements on scientific merit.
+- You may revise and resubmit at any time.
+
+You can view the full assessment at:
+{issue_url}"""
+
+            else:
+                middle_section = f"""{reference_block}
+
+AI STRUCTURAL PRE-CHECK: UNAVAILABLE
+The automated screening could not be completed at this time. This does not affect your submission — it will proceed directly to examiner review.
+
+You can view your submission at:
+{issue_url}"""
+
+            email_body = f"""Dear {submitter_name},
+
+Your submission "{submission_title}" has been received by the TSM2 Institute for Cosmology.
+
+{middle_section}
+
 Thank you for your submission.
 
-TSM2 Institute for Cosmology"""
-                
-                email_subject = f"TSM2 Institute — Submission Received [TSM2-SUB] {submission_title}"
-                
-                # TODO: Submitter email requires an external email service (e.g., SendGrid, Mailgun, or SMTP).
-                # Replit Mail only sends to the verified Replit account owner, not to arbitrary external addresses.
-                # The email content is logged here for audit purposes until an external service is integrated.
-                print(f"[SUBMITTER EMAIL] Would send to: {submitter_email}", file=sys.stderr)
-                print(f"[SUBMITTER EMAIL] Subject: {email_subject}", file=sys.stderr)
-                print(f"[SUBMITTER EMAIL] Overall Status: {overall_status}", file=sys.stderr)
-                sys.stderr.flush()
-                    
-            except Exception as e:
-                print(f"Submitter email error: {str(e)}", file=sys.stderr)
-        
-        t = threading.Thread(target=_send, daemon=True)
-        t.start()
+TSM2 Institute for Cosmology
+info@tsm2.org
+"""
+
+            email_subject = f"TSM2 Institute — Submission Received: {submission_title}"
+
+            emailutil.send_email_async(
+                to_address=submitter_email,
+                subject=email_subject,
+                body_text=email_body,
+            )
+            print(f"[SUBMITTER EMAIL] Queued for {submitter_email} (status={overall_status})", file=sys.stderr)
+
+        except Exception as e:
+            print(f"Submitter email error: {str(e)}", file=sys.stderr)
     
     def create_github_issue(self, title, body):
         github_token = os.environ.get('GITHUB_PAT')
