@@ -149,6 +149,7 @@ Each submission creates a GitHub Issue in the `TSM2Institute/submissions` reposi
 |----------|----------|---------|
 | `GITHUB_PAT` | Yes | GitHub Personal Access Token for creating issues in `TSM2Institute/submissions` |
 | `GROK_API_KEY` | Yes | xAI API key for Grok AI compliance checking |
+| `TSM2_INFO_EMAIL` | Yes | Password for `info@tsm2.org` — used for SMTP authentication against `smtp.hostedemail.com` (TLS, port 587) to send submitter confirmation and examiner notification emails |
 
 These are stored as secrets in the Replit environment and are never exposed in code or logs.
 

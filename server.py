@@ -716,7 +716,7 @@ Respond in this exact JSON format only — no markdown, no preamble, no trailing
             core_claim = form_data.get('core_claim', 'Not provided')
 
             overall_status = (compliance_result or {}).get('overall_status', 'UNAVAILABLE')
-            summary = (compliance_result or {}).get('summary', 'No AI summary available.')
+            summary = (compliance_result or {}).get('message') or (compliance_result or {}).get('summary') or 'No AI summary available.'
             criteria = (compliance_result or {}).get('criteria', []) if compliance_result else []
 
             failed_section = ""
