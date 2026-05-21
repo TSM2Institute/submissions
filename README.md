@@ -87,7 +87,8 @@ Each submission creates a GitHub Issue in the `TSM2Institute/submissions` reposi
 
 **Labels Applied Automatically:**
 - `Pending Review` (always)
-- `Screening: Passed` or `Screening: Needs Review` or `Screening: Unavailable`
+- AI verdict: `AI Pre-Check: Compliant`, `AI Pre-Check: Non-Compliant`, or `Screening: Unavailable`
+- Scale label derived from the submission's Primary Scale field (one of `Scale: Quantum`, `Scale: Atomic/Molecular`, `Scale: Planetary`, `Scale: Stellar`, `Scale: Galactic`, `Scale: Cosmic`, `Scale: Multi-Scale`, `Scale: Other`) — enables search/filter on the future browse page. Note: the form value `Cosmological` maps to the `Scale: Cosmic` label.
 
 **Not Included (Private):**
 - Submitter's name, email, organization
@@ -137,7 +138,7 @@ Each submission creates a GitHub Issue in the `TSM2Institute/submissions` reposi
 | **PDF Vision** | PyMuPDF (200 DPI PNG render, up to 50 pages); AGPL-licensed, acceptable for non-commercial Institute use |
 | **Issue Tracking** | GitHub Issues API |
 | **Email** | SMTP via `smtp.hostedemail.com` (TLS, port 587), authenticated as `info@tsm2.org`; uses Python stdlib `smtplib` |
-| **PDF Storage** | Local `/uploads/` directory with public URLs |
+| **PDF Storage** | Permanent: GitHub repo `TSM2Institute/submissions/pdfs/` via Contents API → `raw.githubusercontent.com` URL in the issue. Temporary: local `/uploads/` directory (used for text extraction + vision rendering; fallback URL if GitHub upload fails). |
 | **Hosting** | Replit (autoscale deployment) |
 | **Font** | Inter (Google Fonts) |
 

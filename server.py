@@ -30,6 +30,91 @@ except ImportError:
     print("[STARTUP] pymupdf not installed; PDF page-to-image rendering will be disabled.", file=sys.stderr)
 
 
+GITHUB_REPO = "TSM2Institute/submissions"
+GITHUB_PDF_BRANCH = "main"
+GITHUB_PDF_DIR = "pdfs"
+
+SCALE_LABELS = {
+    "Quantum": "Scale: Quantum",
+    "Atomic/Molecular": "Scale: Atomic/Molecular",
+    "Planetary": "Scale: Planetary",
+    "Stellar": "Scale: Stellar",
+    "Galactic": "Scale: Galactic",
+    "Cosmological": "Scale: Cosmic",
+    "Multi-Scale": "Scale: Multi-Scale",
+    "Other": "Scale: Other",
+}
+
+
+def upload_pdf_to_github(local_path, filename, github_pat):
+    """Upload a PDF to the GitHub repo and return the permanent raw URL.
+
+    Args:
+        local_path: path to the PDF file on local disk
+        filename: the sanitized filename (with unique prefix)
+        github_pat: GitHub Personal Access Token
+
+    Returns:
+        (permanent_url, success) tuple. permanent_url is None on failure.
+    """
+    if not github_pat:
+        print("[GITHUB PDF ERROR] GITHUB_PAT not configured; skipping upload", file=sys.stderr)
+        return None, False
+
+    fallback_raw_url = (
+        f"https://raw.githubusercontent.com/{GITHUB_REPO}/"
+        f"{GITHUB_PDF_BRANCH}/{GITHUB_PDF_DIR}/{filename}"
+    )
+
+    try:
+        with open(local_path, "rb") as f:
+            content_b64 = base64.b64encode(f.read()).decode("utf-8")
+
+        api_url = (
+            f"https://api.github.com/repos/{GITHUB_REPO}/"
+            f"contents/{GITHUB_PDF_DIR}/{filename}"
+        )
+
+        payload = json.dumps({
+            "message": f"Upload submission PDF: {filename}",
+            "content": content_b64,
+            "branch": GITHUB_PDF_BRANCH,
+        }).encode("utf-8")
+
+        req = urllib.request.Request(
+            api_url,
+            data=payload,
+            method="PUT",
+            headers={
+                "Authorization": f"token {github_pat}",
+                "Content-Type": "application/json",
+                "User-Agent": "TSM2-Submission-Portal",
+                "Accept": "application/vnd.github.v3+json",
+            },
+        )
+
+        with urllib.request.urlopen(req, timeout=60) as response:
+            result = json.loads(response.read().decode("utf-8"))
+            permanent_url = result.get("content", {}).get("download_url") or fallback_raw_url
+            print(f"[GITHUB PDF] Uploaded: {permanent_url}", file=sys.stderr)
+            return permanent_url, True
+
+    except urllib.error.HTTPError as e:
+        if e.code == 422:
+            print(f"[GITHUB PDF] File already exists, using existing URL: {fallback_raw_url}", file=sys.stderr)
+            return fallback_raw_url, True
+        try:
+            body = e.read().decode("utf-8", errors="ignore")[:500]
+        except Exception:
+            body = ""
+        print(f"[GITHUB PDF ERROR] HTTP {e.code} for {filename}: {body}", file=sys.stderr)
+        return None, False
+
+    except Exception as e:
+        print(f"[GITHUB PDF ERROR] Failed to upload {filename}: {e}", file=sys.stderr)
+        return None, False
+
+
 def render_pdf_pages_to_images(pdf_path, max_pages=50, dpi=200):
     """Render each page of a PDF to a PNG image and return as base64 data URIs.
 
@@ -257,10 +342,11 @@ class RequestHandler(SimpleHTTPRequestHandler):
         
         domain = os.environ.get('REPLIT_DEV_DOMAIN', '')
         if domain:
-            pdf_url = f"https://{domain}/uploads/{final_filename}"
+            local_pdf_url = f"https://{domain}/uploads/{final_filename}"
         else:
-            pdf_url = f"/uploads/{final_filename}"
-        
+            local_pdf_url = f"/uploads/{final_filename}"
+        pdf_url = local_pdf_url
+
         print(f"PDF saved: {pdf_path} ({len(pdf_content)} bytes)", file=sys.stderr)
         print(f"Processing submission: {title}", file=sys.stderr)
         
@@ -282,6 +368,17 @@ class RequestHandler(SimpleHTTPRequestHandler):
             print(f"[PDF RENDER] Vision unavailable: {render_result['error']}", file=sys.stderr)
         else:
             print(f"[PDF RENDER] Rendered {render_result['rendered_pages']}/{render_result['total_pages']} pages at 200 DPI", file=sys.stderr)
+
+        # Upload PDF to GitHub for permanent storage (after extraction + render, before issue creation)
+        permanent_pdf_url, pdf_upload_success = upload_pdf_to_github(
+            local_path=pdf_path,
+            filename=final_filename,
+            github_pat=os.environ.get("GITHUB_PAT", ""),
+        )
+        if pdf_upload_success and permanent_pdf_url:
+            pdf_url = permanent_pdf_url
+        else:
+            print("[GITHUB PDF] Falling back to local Replit URL for PDF link", file=sys.stderr)
 
         compliance_result = None
         if form_data:
@@ -400,7 +497,7 @@ Once these corrections are addressed, the submission may be revised and re-submi
             issue_number = result.get('number')
             issue_url = result.get('html_url')
             
-            self.apply_github_labels(issue_number, compliance_result)
+            self.apply_github_labels(issue_number, compliance_result, form_data)
             self.send_examiner_notification(user_info, form_data, title, issue_url, issue_number, compliance_result)
             self.send_submitter_email(user_info, form_data, issue_number, issue_url, compliance_result)
             
@@ -664,9 +761,9 @@ Respond in this exact JSON format only — no markdown, no preamble, no trailing
                 "error": True,
             }
     
-    def apply_github_labels(self, issue_number, compliance_result):
+    def apply_github_labels(self, issue_number, compliance_result, form_data=None):
         import threading
-        
+
         def _apply():
             github_token = os.environ.get('GITHUB_PAT')
             if not github_token:
@@ -682,6 +779,11 @@ Respond in this exact JSON format only — no markdown, no preamble, no trailing
                 labels.append("AI Pre-Check: Non-Compliant")
             else:
                 labels.append("Screening: Unavailable")
+
+            primary_scale = (form_data or {}).get("primary_scale", "")
+            scale_label = SCALE_LABELS.get(primary_scale)
+            if scale_label:
+                labels.append(scale_label)
             
             try:
                 url = f'https://api.github.com/repos/TSM2Institute/submissions/issues/{issue_number}/labels'

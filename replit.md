@@ -51,11 +51,11 @@ Preferred communication style: Simple, everyday language.
 ### Backend Architecture
 - **Python HTTP Server**: Custom `SimpleHTTPRequestHandler` extension
 - **API Endpoint**: `/api/submit` handles POST multipart/form-data submissions
-- **PDF Storage**: Local `/uploads/` folder with public URLs
+- **PDF Storage**: Two-tier — local `/uploads/` directory (temporary, used for text extraction + vision rendering) plus permanent storage in the `TSM2Institute/submissions` GitHub repo under `/pdfs/`. The GitHub issue links to the `raw.githubusercontent.com` URL, which is stable across Replit restarts and redeploys. Falls back to the local URL if the GitHub upload fails.
 - **PDF Validation**: Extension check, magic bytes verification, 100MB size limit, filename sanitization
 - **AI Integration**: Grok API (multimodal — `grok-4` when page images are available, falls back to `grok-3-mini` text-only) for 9-criteria structural compliance pre-checking (evaluates structure, not scientific truth)
 - **PDF Vision**: PyMuPDF renders each PDF page to a 200 DPI PNG, sent alongside the extracted text in the Grok call. Capped at 50 pages per submission; text extraction is unaffected by this cap. PyMuPDF is AGPL — acceptable for the Institute's non-commercial public-source use; reassess if the platform ever moves to commercial SaaS.
-- **GitHub Integration**: Creates Issues via GitHub API in `TSM2Institute/submissions`
+- **GitHub Integration**: Creates Issues via GitHub API in `TSM2Institute/submissions`, uploads PDFs to `/pdfs/` via the Contents API, and applies auto-labels (`Pending Review`, AI verdict, `Scale: …`) to each issue for search filtering.
 - **Email Integration**: SMTP via Institute mail server (`smtp.hostedemail.com:587`, TLS) — sends two emails per submission: (1) submitter confirmation with AI verdict to the submitter's address, and (2) examiner notification with private submitter details to `info@tsm2.org`. Implemented in `emailutil.py`.
 
 ### Form Structure (6 Steps)
