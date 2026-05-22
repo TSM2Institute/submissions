@@ -88,7 +88,7 @@ Each submission creates a GitHub Issue in the `TSM2Institute/submissions` reposi
 **Labels Applied Automatically:**
 - `Pending Review` (always)
 - AI verdict: `AI Pre-Check: Compliant`, `AI Pre-Check: Non-Compliant`, or `Screening: Unavailable`
-- Scale label derived from the submission's Primary Scale field (one of `Scale: Quantum`, `Scale: Atomic/Molecular`, `Scale: Planetary`, `Scale: Stellar`, `Scale: Galactic`, `Scale: Cosmic`, `Scale: Multi-Scale`, `Scale: Other`) — enables search/filter on the future browse page. Note: the form value `Cosmological` maps to the `Scale: Cosmic` label.
+- Scale label derived from the submission's Primary Scale field (one of `Scale: Laboratory`, `Scale: Planetary`, `Scale: Stellar`, `Scale: Galactic`, `Scale: Cosmic`) — enables search/filter on the future browse page.
 
 **Not Included (Private):**
 - Submitter's name, email, organization

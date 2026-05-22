@@ -35,14 +35,11 @@ GITHUB_PDF_BRANCH = "main"
 GITHUB_PDF_DIR = "pdfs"
 
 SCALE_LABELS = {
-    "Quantum": "Scale: Quantum",
-    "Atomic/Molecular": "Scale: Atomic/Molecular",
+    "Laboratory": "Scale: Laboratory",
     "Planetary": "Scale: Planetary",
     "Stellar": "Scale: Stellar",
     "Galactic": "Scale: Galactic",
-    "Cosmological": "Scale: Cosmic",
-    "Multi-Scale": "Scale: Multi-Scale",
-    "Other": "Scale: Other",
+    "Cosmic": "Scale: Cosmic",
 }
 
 
