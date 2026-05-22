@@ -58,7 +58,7 @@ def upload_pdf_to_github(local_path, filename, github_pat):
         (permanent_url, success) tuple. permanent_url is None on failure.
     """
     if not github_pat:
-        print("[GITHUB PDF ERROR] GITHUB_PAT not configured; skipping upload", file=sys.stderr)
+        print("[GITHUB PDF ERROR] Submissions_PAT_21May not configured; skipping upload", file=sys.stderr)
         return None, False
 
     fallback_raw_url = (
@@ -373,7 +373,7 @@ class RequestHandler(SimpleHTTPRequestHandler):
         permanent_pdf_url, pdf_upload_success = upload_pdf_to_github(
             local_path=pdf_path,
             filename=final_filename,
-            github_pat=os.environ.get("GITHUB_PAT", ""),
+            github_pat=os.environ.get("Submissions_PAT_21May", ""),
         )
         if pdf_upload_success and permanent_pdf_url:
             pdf_url = permanent_pdf_url
@@ -765,9 +765,9 @@ Respond in this exact JSON format only — no markdown, no preamble, no trailing
         import threading
 
         def _apply():
-            github_token = os.environ.get('GITHUB_PAT')
+            github_token = os.environ.get('Submissions_PAT_21May')
             if not github_token:
-                print("Cannot apply labels: GITHUB_PAT not configured", file=sys.stderr)
+                print("Cannot apply labels: Submissions_PAT_21May not configured", file=sys.stderr)
                 return
             
             overall_status = compliance_result.get('overall_status', 'UNAVAILABLE') if compliance_result else 'UNAVAILABLE'
@@ -968,10 +968,10 @@ info@tsm2.org
             print(f"Submitter email error: {str(e)}", file=sys.stderr)
     
     def create_github_issue(self, title, body):
-        github_token = os.environ.get('GITHUB_PAT')
+        github_token = os.environ.get('Submissions_PAT_21May')
         if not github_token:
-            print("ERROR: GitHub PAT not configured", file=sys.stderr)
-            return {'success': False, 'code': 500, 'error': 'GitHub PAT not configured. Please add GITHUB_PAT to Replit Secrets.'}
+            print("ERROR: Submissions_PAT_21May not configured", file=sys.stderr)
+            return {'success': False, 'code': 500, 'error': 'GitHub PAT not configured. Please add Submissions_PAT_21May to Replit Secrets.'}
         
         repo_owner = 'TSM2Institute'
         repo_name = 'submissions'

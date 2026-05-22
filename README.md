@@ -148,7 +148,7 @@ Each submission creates a GitHub Issue in the `TSM2Institute/submissions` reposi
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
-| `GITHUB_PAT` | Yes | GitHub Personal Access Token for creating issues in `TSM2Institute/submissions` |
+| `Submissions_PAT_21May` | Yes | GitHub Personal Access Token (Institute account) for creating issues and uploading PDFs in `TSM2Institute/submissions`. Requires Contents: Read and write + Issues: Read and write permissions. |
 | `GROK_API_KEY` | Yes | xAI API key for Grok AI compliance checking |
 | `TSM2_INFO_EMAIL` | Yes | Password for `info@tsm2.org` — used for SMTP authentication against `smtp.hostedemail.com` (TLS, port 587) to send submitter confirmation and examiner notification emails |
 

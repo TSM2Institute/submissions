@@ -106,7 +106,7 @@ Overall outcomes: PASSED / NEEDS REVIEW / UNAVAILABLE
 ### Third-Party Services
 - **GitHub API**: Creates issues for tracking submissions
   - Repository: `TSM2Institute/submissions`
-  - Requires `GITHUB_PAT` environment variable
+  - Requires `Submissions_PAT_21May` environment variable (Institute-owned PAT with Contents: Read and write + Issues: Read and write on `TSM2Institute/submissions`)
 - **Grok API**: AI compliance pre-checking (multimodal)
   - Endpoint: `https://api.x.ai/v1/chat/completions`
   - Model: `grok-4` when page images are sent (default path), `grok-3-mini` fallback for text-only
@@ -130,7 +130,7 @@ Overall outcomes: PASSED / NEEDS REVIEW / UNAVAILABLE
 ### Environment Variables
 | Variable | Purpose |
 |----------|---------|
-| `GITHUB_PAT` | GitHub Personal Access Token for creating issues |
+| `Submissions_PAT_21May` | GitHub Personal Access Token (Institute account) for creating issues and uploading PDFs to `TSM2Institute/submissions` |
 | `GROK_API_KEY` | Grok API key for AI compliance checking |
 | `TSM2_INFO_EMAIL` | Password for `info@tsm2.org` — used for SMTP submitter + examiner emails |
 
