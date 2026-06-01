@@ -81,7 +81,7 @@
 
     <main class="flex-grow py-8 md:py-12 px-4 md:px-6" x-data="submissionForm()" x-cloak>
         <div class="max-w-4xl mx-auto">
-            <div class="bg-white border border-gray-200 rounded-xl shadow-sm mb-6 overflow-hidden" x-data="{ open: false }">
+            <div x-show="currentStep === 1" class="bg-white border border-gray-200 rounded-xl shadow-sm mb-6 overflow-hidden" x-data="{ open: false }">
                 <button @click="open = !open" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
                     <div class="flex items-center gap-3">
                         <svg class="w-5 h-5 text-dark-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,7 +122,7 @@
                 </div>
             </div>
 
-            <div class="bg-white border border-gray-200 rounded-xl shadow-sm mb-6 overflow-hidden" x-data="{ openCriteria: null }">
+            <div x-show="currentStep === 1" class="bg-white border border-gray-200 rounded-xl shadow-sm mb-6 overflow-hidden" x-data="{ openCriteria: null }">
                 <div class="px-6 py-4 border-b border-gray-100">
                     <h3 class="text-lg font-semibold text-dark-blue">Submission Criteria — What Your PDF Must Address</h3>
                     <p class="text-sm text-gray-600 mt-1">All submissions are evaluated against these 9 structural criteria. The AI pre-check assesses your PDF content directly against each criterion. Criterion 10 is assessed by the Examiner only.</p>
@@ -406,23 +406,9 @@
                         </div>
 
                         <div x-show="currentStep === 4" x-transition>
-                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 4: Falsifiability Condition</h4>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 4: Full Document Upload</h4>
                             <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                                <p class="text-sm text-blue-800"><strong>Required:</strong> At least one explicit condition under which the claim would be false. Must be testable in principle (now or in future). Claims immune to falsification are not accepted.</p>
-                            </div>
-                            <div class="space-y-5">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Falsifiability Condition <span class="text-red-500">*</span></label>
-                                    <textarea x-model="form.falsifiability" rows="5" placeholder="What specific result, observation, or experiment would prove this claim false? Be precise and testable." class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-light-blue focus:border-light-blue" required></textarea>
-                                    <p class="text-xs text-gray-500 mt-1">Describe what would definitively falsify your claim.</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div x-show="currentStep === 5" x-transition>
-                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 5: Full Document Upload</h4>
-                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                                <p class="text-sm text-blue-800"><strong>Mandatory:</strong> Attach the complete PDF containing your full argument/framework. This is the definitive record for compliance review.</p>
+                                <p class="text-sm text-blue-800"><strong>Mandatory:</strong> Attach the complete PDF containing your full Manuscript. This is the definitive record for compliance review.</p>
                             </div>
                             <div class="space-y-5">
                                 <div>
@@ -460,8 +446,8 @@
                             </div>
                         </div>
 
-                        <div x-show="currentStep === 6" x-transition>
-                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 6: Declaration</h4>
+                        <div x-show="currentStep === 5" x-transition>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Step 5: Declaration</h4>
                             <div class="space-y-5">
                                 <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                                     <label class="flex items-start gap-3 cursor-pointer">
@@ -521,8 +507,8 @@
         function submissionForm() {
             return {
                 currentStep: 1,
-                totalSteps: 6,
-                stepLabels: ['Your Info', 'Details', 'Criteria', 'Falsifiability', 'Document', 'Declaration'],
+                totalSteps: 5,
+                stepLabels: ['Your Info', 'Details', 'Criteria', 'Document', 'Declaration'],
                 isSubmitting: false,
                 submitted: false,
                 issueUrl: '',
@@ -542,7 +528,6 @@
                     submission_title: '',
                     core_claim: '',
                     primary_scale: '',
-                    falsifiability: '',
                     criteria_terms: false,
                     criteria_mechanism: false,
                     criteria_test_path: false,
@@ -613,18 +598,12 @@
                             }
                             return true;
                         case 4:
-                            if (!this.form.falsifiability.trim()) {
-                                this.error = 'Falsifiability condition is required.';
-                                return false;
-                            }
-                            return true;
-                        case 5:
                             if (!this.pdfFile) {
                                 this.error = 'PDF document is required.';
                                 return false;
                             }
                             return true;
-                        case 6:
+                        case 5:
                             if (!this.form.declaration) {
                                 this.error = 'You must accept the declaration to submit.';
                                 return false;
@@ -658,11 +637,6 @@
 
 **Core Claim:**
 ${this.form.core_claim}
-
----
-
-### Falsifiability Condition
-${this.form.falsifiability}
 
 ---
 

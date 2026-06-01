@@ -1,0 +1,64 @@
+PROMPT FOR REPLIT CLAUDE — Surgical edit bundle. Four related fixes to the submission portal.
+You're making four changes across index.html and server.py. These are precise, scoped edits — do not refactor, restyle, or "improve" anything beyond what's specified. Line numbers are from the current files; verify the matching text before editing since exact lines may have shifted slightly. After all edits, the form must go from 6 steps to 5 steps with no broken step references.
+
+FIX 1 — Remove the Falsifiability Condition step entirely (form, validation, state, GitHub issue, Grok prompt)
+The submitter currently types a falsifiability condition into Step 4. This is being removed. Falsifiability remains a structural criterion (Criterion 5) assessed by the AI from the PDF content — that does NOT change. Only the redundant form field and its downstream echoes are being removed. Do not touch Criterion 5 in the criteria accordion list.
+1a. Delete the Step 4 block in index.html (currently lines 408–420), the entire <div x-show="currentStep === 4" x-transition> … </div> for "Step 4: Falsifiability Condition".
+1b. Update the Alpine data object (submissionForm(), currently ~line 521+):
+
+Change totalSteps: 6 to totalSteps: 5
+Change the stepLabels array from ['Your Info', 'Details', 'Criteria', 'Falsifiability', 'Document', 'Declaration'] to ['Your Info', 'Details', 'Criteria', 'Document', 'Declaration'] (remove 'Falsifiability')
+In the form: { ... } object, remove the falsifiability: '', property
+
+1c. Renumber the remaining steps. After deleting Step 4, the old Step 5 (Document) becomes Step 4, and the old Step 6 (Declaration) becomes Step 5. Update every x-show="currentStep === N" on the step blocks accordingly:
+
+The Document step block: change x-show="currentStep === 5" to x-show="currentStep === 4"
+The Declaration step block: change x-show="currentStep === 6" to x-show="currentStep === 5"
+Confirm Steps 1, 2, 3 are untouched.
+
+1d. Fix validateStep() (currently ~lines 581–649):
+
+Delete the entire case 4: block (the falsifiability validation — if (!this.form.falsifiability.trim()) …)
+Renumber the old case 5: (PDF check) to case 4:
+Renumber the old case 6: (declaration check) to case 5:
+
+1e. Verify the navigation buttons (currently ~lines 488–497). The submit button uses x-show="currentStep === totalSteps" and the next button uses x-show="currentStep < totalSteps". Since these reference totalSteps (now 5) rather than hardcoded numbers, they should work unchanged — but confirm there are no hardcoded step numbers in the button logic. If any exist, fix them.
+1f. Remove the Falsifiability section from the GitHub issue body. The issue markdown is built client-side in index.html (currently ~lines 662–669). Remove the falsifiability section so the body goes directly from the Core Claim block to the Criteria Self-Certification block. Specifically, delete:
+### Falsifiability Condition
+${this.form.falsifiability}
+---
+Ensure exactly one --- separator remains between the Core Claim section and the ### Criteria Self-Certification section — not two, not zero. After the edit, there must be no doubled horizontal rule and no empty heading.
+1g. Remove the falsifiability line from the Grok prompt in server.py:
+
+Delete line ~560: falsifiability = form_data.get('falsifiability', 'Not provided')
+Delete the line in the Grok prompt (~line 581) that reads: - Submitter's stated falsifiability condition: {falsifiability}
+Confirm the falsifiability variable is not referenced anywhere else in server.py after these deletions (no dangling reference).
+
+
+FIX 2 — Step 5 (now Step 4) document upload description text
+In index.html (currently ~line 425), the Document upload step description reads:
+<strong>Mandatory:</strong> Attach the complete PDF containing your full argument/framework. This is the definitive record for compliance review.
+Change argument/framework to Manuscript. The line becomes:
+<strong>Mandatory:</strong> Attach the complete PDF containing your full Manuscript. This is the definitive record for compliance review.
+(No quotation marks around Manuscript. Only that two-word swap — leave the rest of the sentence intact.)
+
+FIX 3 — Show the instructions accordion and criteria list on Step 1 only
+In index.html, two sibling blocks currently render on every step:
+
+The "Submission Instructions & Governance" accordion (currently lines 84–123)
+The "Submission Criteria — What Your PDF Must Address" block (currently lines 125–222)
+
+Both sit inside the main x-data="submissionForm()" element, so currentStep is in scope for them. Add x-show="currentStep === 1" to each of these two top-level block divs so they appear only on Step 1 and disappear from Step 2 onward. Add it to the outermost div of each block (the ones with classes bg-white border border-gray-200 rounded-xl shadow-sm mb-6 overflow-hidden). Do not alter their internal x-data open/close state logic — only add the step-scoped visibility.
+
+VERIFICATION CHECKLIST — confirm after editing:
+
+Form runs 5 steps: Your Info → Details → Criteria → Document → Declaration. Progress bar reads "Step X of 5".
+No Falsifiability step appears anywhere in the form flow.
+Stepping forward/back through all 5 steps validates correctly at each stage (no step skips validation, no step is stranded).
+A submitted test issue shows no "Falsifiability Condition" section — body goes Core Claim → Criteria Self-Certification with a single separator.
+The instructions accordion and criteria list appear on Step 1 only, gone from Steps 2–5.
+Step 4 (Document) description reads "your full Manuscript."
+server.py has no remaining reference to falsifiability. Grok prompt no longer mentions a submitter-stated falsifiability condition.
+Criterion 5 (Falsifiability) still present in the criteria accordion list on Step 1 — untouched.
+
+Report back what you changed and flag anything that didn't match the expected line numbers.

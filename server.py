@@ -557,7 +557,6 @@ Once these corrections are addressed, the submission may be revised and re-submi
             submission_title = form_data.get('submission_title', 'Not provided')
             core_claim = form_data.get('core_claim', 'Not provided')
             primary_scale = form_data.get('primary_scale', 'Not provided')
-            falsifiability = form_data.get('falsifiability', 'Not provided')
 
             if pdf_extraction_failed or not pdf_text:
                 pdf_section = "[PDF text could not be extracted. Assess based on the metadata fields above only. Note in your summary that the assessment is limited to form fields due to PDF extraction failure.]"
@@ -574,11 +573,10 @@ Once these corrections are addressed, the submission may be revised and re-submi
             prompt = f"""You are screening a submission to the TSM2 Institute for Cosmology against 9 structural criteria. Evaluate structure, methodology, and epistemic discipline only — do NOT judge scientific merit, correctness, or alignment with any framework.
 
 SUBMISSION METADATA (provided for orientation only — assess from PDF text below, not from these fields):
-CRITICAL INSTRUCTION: The metadata fields above (especially the falsifiability condition) are the submitter's SELF-DESCRIPTION of their work. They may be more polished than what the PDF actually contains. Always assess from the PDF text. If the PDF does not contain what the form field claims, score based on what is in the PDF, not what the form field says.
+CRITICAL INSTRUCTION: The metadata fields above are the submitter's SELF-DESCRIPTION of their work. They may be more polished than what the PDF actually contains. Always assess from the PDF text. If the PDF does not contain what the form field claims, score based on what is in the PDF, not what the form field says.
 - Title: {submission_title}
 - Submitter's stated core claim: {core_claim}
 - Submitter's stated primary scale: {primary_scale}
-- Submitter's stated falsifiability condition: {falsifiability}
 
 PDF TEXT:
 ---
