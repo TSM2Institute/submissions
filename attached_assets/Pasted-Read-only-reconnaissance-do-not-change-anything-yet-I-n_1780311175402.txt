@@ -1,0 +1,22 @@
+Read-only reconnaissance, do not change anything yet
+I need to inspect the current state of a few specific areas of the codebase before making changes. Please do not edit, refactor, or "fix" anything in this round. Just return the exact current code for each item below, verbatim, with file names and approximate line numbers. If something spans a lot of lines, return the whole relevant block anyway — I need full context, not summaries.
+1. Step 4 (Falsifiability Condition) — frontend
+In index.html, return the complete markup for the Step 4 "Falsifiability Condition" step — the entire step container/block as it currently exists, including any wrapper div, headings, labels, input/textarea, helper text, and the Alpine.js bindings (x-show, x-model, etc.) attached to it.
+2. Step-tracking mechanism — frontend
+In index.html, show me how the multi-step form tracks steps. Specifically:
+
+How is the current step stored and incremented (e.g. a currentStep variable, totalSteps constant)?
+How is the progress bar rendered, and how are the step labels (Your Info, Details, Criteria, Falsifiability, Document, Declaration) defined — hardcoded markup, or an array/object iterated over?
+Show the Alpine.js data object (the x-data declaration) that holds this state.
+
+3. Falsifiability field → GitHub issue — backend
+In server.py:
+
+Show the code that reads the falsifiability field from the incoming form submission (the variable assignment from the request payload).
+Show the section of the GitHub issue body template where that falsifiability value is written in. I need the surrounding template string so I can see exactly what to remove and whether removing it leaves a dangling blank line or heading.
+
+4. Step 5 description line — frontend
+In index.html, return the exact verbatim line for the Step 5 (Full Document Upload) description that currently reads "Attach the complete PDF containing your full argument/framework" — with enough surrounding markup that I can see the element it sits in.
+5. The accordion + criteria block — frontend
+In index.html, return the markup for (a) the "Submission Instructions & Governance" accordion and (b) the "Submission Criteria — What Your PDF Must Address" block including the 1–10 criteria list. I need to see how they're positioned relative to the step container — specifically whether they sit inside the stepped-form area or above it, and whether they have any x-show condition currently, so I can scope them to Step 1 only.
+For each item, just paste the code with a short label. No commentary, no suggested changes. Reconnaissance only.
