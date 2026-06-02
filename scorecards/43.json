@@ -1,0 +1,85 @@
+{
+  "issue_number": 43,
+  "submission_title": "nvironmental Selection and the Transitional Role of Antiparticles in Dynamic Equilibrium - Dashboard",
+  "primary_scale": "Laboratory",
+  "core_claim": "Environmental conditions determine whether newly created particle–antiparticle systems follow a\nmatter-retention pathway or an energy-return pathway.",
+  "overall_verdict": "NON_COMPLIANT",
+  "criteria": [
+    {
+      "number": 1,
+      "name": "Clear Core Claim",
+      "status": "PASS",
+      "reason": "The core claim is explicitly stated in the Core Claim section and repeated consistently in the Conclusion and Addendum A: environmental conditions determine matter-retention vs. energy-return pathways for particle-antiparticle systems."
+    },
+    {
+      "number": 2,
+      "name": "Defined Terms",
+      "status": "NON_COMPLIANT",
+      "reason": "The Definitions section only names five terms as 'operational concepts governing outcomes' without providing any actual operational definitions, measurable criteria, or consistent application rules for Environmental Selection, Matter Retention, or Energy Return."
+    },
+    {
+      "number": 3,
+      "name": "Mechanism",
+      "status": "PASS",
+      "reason": "A coherent generative sequence is provided in the Mechanism section: Energy → Particle–Antiparticle Production → Environmental Selection → Matter Retention + Energy Return → Dynamic Equilibrium."
+    },
+    {
+      "number": 4,
+      "name": "Test Path",
+      "status": "PASS",
+      "reason": "The Test Path and Addendum A sections supply an explicit procedure (vary environmental conditions at CERN facilities while measuring retention/return rates), a predicted outcome, and a failure condition stated in Falsification."
+    },
+    {
+      "number": 5,
+      "name": "Falsifiability",
+      "status": "PASS",
+      "reason": "Falsification section states a clear failure condition: the hypothesis fails if retention and return probabilities remain unchanged under controlled environmental variation."
+    },
+    {
+      "number": 6,
+      "name": "Dependency Transparency",
+      "status": "NON_COMPLIANT",
+      "reason": "No section or statements acknowledge assumptions, scope limits, or what the framework does not claim; the document presents the claim and test path without any qualifying language on dependencies."
+    },
+    {
+      "number": 7,
+      "name": "Non-Arbitrary Selection",
+      "status": "NON_COMPLIANT",
+      "reason": "No justification is given anywhere for the choice of the five named concepts, the specific mechanism steps, or why alternatives (e.g., standard pair-production models) were rejected."
+    },
+    {
+      "number": 8,
+      "name": "Predictive Capability",
+      "status": "PASS",
+      "reason": "Predictions section and Addendum A state a measurable prediction: retention-return ratios vary with environment and matter-rich environments favour retention pathways; environmental change should alter those ratios."
+    },
+    {
+      "number": 9,
+      "name": "Reproducibility",
+      "status": "PASS",
+      "reason": "The Test Path, Falsification, and Addendum A sections describe a traceable procedure using named CERN facilities, controlled variation of conditions, and measurement of retention/return rates that an independent reviewer could follow at a conceptual level."
+    }
+  ],
+  "corrections": [
+    {
+      "number": 2,
+      "name": "Defined Terms",
+      "correction": "Add a dedicated Definitions section that supplies operational definitions for each key term. Examples: (a) Environmental Selection: the process by which local density and energy conditions alter the branching ratio between retention and return with a measurable threshold of X; (b) Matter Retention: the fraction of created pairs that remain as stable matter after time t under condition Y; (c) Energy Return: the fraction that annihilate within time t. These must include a quantitative or procedural criterion for each term."
+    },
+    {
+      "number": 6,
+      "name": "Dependency Transparency",
+      "correction": "Add a dedicated Assumptions and Scope section that lists at least three explicit limitations or unclaimed elements. Examples: (a) the framework assumes environmental conditions can be isolated from quantum vacuum fluctuations; (b) it does not claim to replace standard model decay calculations; (c) predictions apply only to laboratory-scale antiparticle populations. Each item must state what is assumed and what is outside the current scope."
+    },
+    {
+      "number": 7,
+      "name": "Non-Arbitrary Selection",
+      "correction": "Add a section titled 'Selection of Primitives' that justifies the chosen categories. Examples: (a) why Environmental Selection rather than standard-model branching ratios; (b) why Matter Retention and Energy Return are treated as mutually exclusive pathways; (c) comparison with at least one alternative categorization that was considered and rejected. The justification must explain the selection criteria used."
+    }
+  ],
+  "summary": "The submission meets criteria 1, 3, 4, 5, 8 and 9 but fails criteria 2, 6 and 7. Required corrections are to add operational definitions for all key terms, an Assumptions and Scope section, and a justification for the selection of primitives.",
+  "pdf_url": "https://raw.githubusercontent.com/TSM2Institute/submissions/main/pdfs/1fcbb9bf_Environmental_Selection_Antiparticles_Submission.pdf",
+  "submitted_at": "2026-06-02T11:45:07.503329+00:00",
+  "examiner_status": "Pending Review",
+  "registration_number": null
+}
